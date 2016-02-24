@@ -2,24 +2,25 @@ import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import Counter from '../components/Counter';
-import * as CounterActions from '../actions/CounterActions';
 import * as TextActions from '../actions/TextActions';
+import * as AstActions from '../actions/AstActions';
 
 class CounterApp extends Component {
   render() {
-    const { counter, text, dispatch } = this.props;
+    const { ast, text, dispatch } = this.props;
     return (
-      <Counter counter={counter} text={text}
-               {...bindActionCreators(CounterActions, dispatch)}
-               {...bindActionCreators(TextActions, dispatch)} />
+      <Counter text={text} ast={ast}
+               {...bindActionCreators(TextActions, dispatch)}
+               {...bindActionCreators(AstActions, dispatch)}
+      />
     );
   }
 }
 
 function select(state) {
   return {
-    counter: state.counter,
-    text:state.text
+    text:state.text,
+    ast:state.ast
   };
 }
 

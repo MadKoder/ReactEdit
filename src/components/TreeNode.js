@@ -19,7 +19,7 @@ export default class TreeNode extends Component {
     let id = path + "_" + role;
 
     _.forOwn(node, function(value, key) {
-      if(key !== "type") {
+      if(key !== "type" && key !== "range") {
         let childNode = (_.isNumber(value) || _.isString(value)) ?
           (<li key={key}> {key} : {value} </li>) :
           (<li key={key}> 

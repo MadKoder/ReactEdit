@@ -2,10 +2,7 @@
 	"folders":
 	[
 		{
-			"path": "F:\\Javascript\\redux-devtools\\examples\\counter"
-		},
-		{
-			"path": "F:\\Javascript\\redux-test"
+			"path": "src"
 		}
 	]
 }

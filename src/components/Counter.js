@@ -3,74 +3,66 @@ import TreeNode from './TreeNode';
 import _ from 'lodash';
 import esprima from 'esprima';
 
+function parseText(text) {
+  let evaluatedExpression = "undefined";
+  let parsedExpression = "undefined";
+  let tree = {};
+  try {
+    let evaluatedText = 
+      "(function(){let __ret = undefined;" +
+      "try {__ret = " + text + ";}catch(e){}" +
+      "return __ret;})();";
+    evaluatedExpression = eval(evaluatedText);
+  }
+  catch(e) {}
+  try {
+    let jsonExpression = esprima.parse(text, {range: true});
+    parsedExpression = JSON.stringify(
+      jsonExpression.body[0].expression,
+      null,
+      4
+    );
+    tree = jsonExpression.body[0].expression;
+  } catch(e) {}
+
+  return {
+    evaluatedExpression,
+    parsedExpression,
+    tree
+  };
+}
+
 export default class Counter extends Component {
   static propTypes = {
-    increment: PropTypes.func.isRequired,
-    incrementIfOdd: PropTypes.func.isRequired,
-    decrement: PropTypes.func.isRequired,
     setText: PropTypes.func.isRequired,
-    counter: PropTypes.number.isRequired,
+    ast: PropTypes.object.isRequired,
     text: PropTypes.string.isRequired
   };
 
+  constructor(props, context) {
+    super(props, context);
+    this.cursorPosition = 0;
+  }
+  
   handleChange(e) {
     this.props.setText(e.target.value);
+    const {evaluatedExpression, parsedExpression, tree} = parseText(e.target.value);
+    this.props.setAst(tree);
+    this.cursorPosition = e.target.selectionStart;
   }
 
   render() {
-    const { increment, incrementIfOdd, decrement, counter, text } = this.props;
-    /*let protectedExpression = `
-      let __result = "undefined";
-      try {
-        __result = ${text};
-      } catch(e) {}
-      return __result;`*/
-    let evaluatedExpression = "undefined";
-    let parsedExpression = "undefined";
-    let tree = {};
-    try {
-      let evaluatedText = 
-        "(function(){let __ret = undefined;" +
-        "try {__ret = " + text + ";}catch(e){}" +
-        "return __ret;})();";
-      evaluatedExpression = eval(evaluatedText);
-    }
-    catch(e) {}
-    try {
-      let jsonExpression = esprima.parse(text);
-      parsedExpression = JSON.stringify(
-        jsonExpression.body[0].expression,
-        null,
-        4
-      );
-      tree = jsonExpression.body[0].expression;
-    } catch(e) {}
-    /*{
-      "type": "BinaryExpression",
-      "operator": "+",
-      "left": {
-          "type": "Literal",
-          "value": 1,
-          "raw": "1"
-      },
-      "right": {
-          "type": "Literal",
-          "value": 2,
-          "raw": "2"
-      }
-    };*/
+    const { text, ast } = this.props;
+  
+    // let {evaluatedExpression, parsedExpression, tree} = parseText(text);
+    const parsedExpression = JSON.stringify(
+      ast,
+      null,
+      4
+    );
 
     return (
       <div className="vGroup">
-        <p>
-          Clicked: {counter} times
-          {' '}
-          <button onClick={increment}>+</button>
-          {' '}
-          <button onClick={decrement}>-</button>
-          {' '}
-          <button onClick={incrementIfOdd}>Increment if odd</button>
-        </p>
         <input 
              type='text'
              autoFocus='true'
@@ -78,16 +70,10 @@ export default class Counter extends Component {
         />
         <div className="hGroup">
           <textarea cols="50" rows="20" value={parsedExpression} disabled/>
-          <TreeNode node={tree} path="" role="root"/>
+          <TreeNode node={ast} path="" role="root"/>
         </div>
-        <div> {evaluatedExpression} </div>
-        <ul>       
-          {/*_.range(counter).map(i => (
-            <li key={i}>
-              <div> {i} </div>
-            </li>
-          ))*/}
-        </ul>
+        <div> {this.cursorPosition} </div>
+        {/*<div> {evaluatedExpression} </div>*/}
       </div>
     );
   }
