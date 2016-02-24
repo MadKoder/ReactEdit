@@ -1,0 +1,58 @@
+body {
+  font-family: "Helvetica Neue";
+}
+
+h3 {
+  color: #BF616A;
+}
+
+.togglable {
+  display: inline;  
+  color: #D78770;
+  cursor: pointer;
+}
+
+.togglable-down::before,
+.togglable-up::before {
+  font-size: 8px;
+  margin-left: 0.5em;
+}
+
+.togglable-down::before {
+  content: "-";
+  display: inline-block;
+}
+
+.togglable-up::before {
+  content: "+";
+  display: inline-block;
+}
+
+.hGroup {
+  display: flex;
+  flex-direction: row;
+  align-items : center;
+  background-color: white;
+  border-style: solid;
+  /*border-bottom: solid;
+  border-top : solid;*/
+  border-width: 1px;
+  margin : 0px;
+  margin-top : 0px;
+  margin-bottom:  0px;
+  /* background-color: #eeeeee; */
+}
+
+.vGroup
+{
+  background-color: white;
+  border-style: solid;
+  border-width: 1px;
+  margin : 0px;
+  display: flex;
+  flex-direction: column;
+}
+
+/*.treenode {
+  display: flex;
+}*/
