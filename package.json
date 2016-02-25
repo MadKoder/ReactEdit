@@ -15,6 +15,7 @@
     "url": "https://github.com/gaearon/redux-devtools/issues"
   },
   "dependencies": {
+    "estraverse": "^4.1.1",
     "react": "^0.14.6",
     "react-dom": "^0.14.6",
     "react-redux": "^4.1.0",

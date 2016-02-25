@@ -4,6 +4,14 @@
 		"selected_items":
 		[
 			[
+				"inp",
+				"innerCallExpressionParent"
+			],
+			[
+				"in",
+				"innerCallExpression"
+			],
+			[
 				"par",
 				"parseText"
 			],
@@ -34,10 +42,6 @@
 			[
 				"fun",
 				"function"
-			],
-			[
-				"in",
-				"inputs"
 			],
 			[
 				"ar",
@@ -510,10 +514,6 @@
 			[
 				"ad",
 				"addStmnt"
-			],
-			[
-				"Sim",
-				"SimpleString"
 			]
 		]
 	},
@@ -523,7 +523,7 @@
 			"file": "src/components/Counter.js",
 			"settings":
 			{
-				"buffer_size": 1998,
+				"buffer_size": 4306,
 				"line_ending": "Windows"
 			}
 		},
@@ -544,16 +544,16 @@
 	"command_palette":
 	{
 		"height": 392.0,
-		"last_filter": "pacl",
+		"last_filter": "ad",
 		"selected_items":
 		[
 			[
-				"pacl",
-				"Package Control: Install Package"
-			],
-			[
 				"ad",
 				"Project: Add Folder"
+			],
+			[
+				"pacl",
+				"Package Control: Install Package"
 			],
 			[
 				"pa",
@@ -593,16 +593,19 @@
 	},
 	"expanded_folders":
 	[
-		"/F/Javascript/ReactEdit/src",
 		"/F/Javascript/ReactEdit/src/actions",
 		"/F/Javascript/ReactEdit/src/components",
 		"/F/Javascript/ReactEdit/src/constants",
 		"/F/Javascript/ReactEdit/src/containers",
 		"/F/Javascript/ReactEdit/src/reducers",
-		"/F/Javascript/ReactEdit/src/store"
+		"/F/Javascript/ReactEdit/src/store",
+		"/F/Javascript/ReactEdit"
 	],
 	"file_history":
 	[
+		"/F/Javascript/ReactEdit/node_modules/estraverse/package.json",
+		"/F/Javascript/ReactEdit/node_modules/estraverse/estraverse.js",
+		"/F/Javascript/ReactEdit/.gitignore",
 		"/F/Javascript/ReactEdit/src/actions/AstActions.js",
 		"/F/Javascript/ReactEdit/src/containers/CounterApp.js",
 		"/F/Javascript/ReactEdit/src/reducers/index.js",
@@ -727,10 +730,7 @@
 		"/D/Downloads/parser(7).js",
 		"/E/GitHub/Nodes/validation/common.js",
 		"/E/GitHub/Nodes/examples3/01-Tests/nodes/list.nodes",
-		"/E/GitHub/Nodes/src/engine3/Dependencies.js",
-		"/E/GitHub/Nodes/src/engine3/Classes.js",
-		"/E/GitHub/Nodes/validation/scripts/records.js",
-		"/E/GitHub/Nodes/examples3/01-Tests/nodes/records.nodes"
+		"/E/GitHub/Nodes/src/engine3/Dependencies.js"
 	],
 	"find":
 	{
@@ -752,9 +752,10 @@
 	},
 	"find_state":
 	{
-		"case_sensitive": true,
+		"case_sensitive": false,
 		"find_history":
 		[
+			"versio",
 			"text",
 			"logo",
 			"log",
@@ -881,8 +882,7 @@
 			"FunctionDef",
 			"FunctionDeclaration",
 			"Func",
-			"typeGraphToCompact",
-			"List"
+			"typeGraphToCompact"
 		],
 		"highlight": true,
 		"in_selection": false,
@@ -933,10 +933,10 @@
 			"VecStruct",
 			"1000"
 		],
-		"reverse": true,
+		"reverse": false,
 		"show_context": true,
 		"use_buffer2": true,
-		"whole_word": true,
+		"whole_word": false,
 		"wrap": true
 	},
 	"groups":
@@ -951,15 +951,15 @@
 					"semi_transient": false,
 					"settings":
 					{
-						"buffer_size": 1998,
+						"buffer_size": 4306,
 						"regions":
 						{
 						},
 						"selection":
 						[
 							[
-								1088,
-								1088
+								1057,
+								1057
 							]
 						],
 						"settings":
@@ -967,41 +967,31 @@
 							"BracketHighlighterBusy": false,
 							"bh_regions":
 							[
-								"bh_single_quote",
-								"bh_single_quote_center",
-								"bh_single_quote_open",
-								"bh_single_quote_close",
-								"bh_single_quote_content",
-								"bh_curly",
-								"bh_curly_center",
-								"bh_curly_open",
-								"bh_curly_close",
-								"bh_curly_content",
-								"bh_round",
-								"bh_round_center",
-								"bh_round_open",
-								"bh_round_close",
-								"bh_round_content",
-								"bh_default",
-								"bh_default_center",
-								"bh_default_open",
-								"bh_default_close",
-								"bh_default_content",
-								"bh_regex",
-								"bh_regex_center",
-								"bh_regex_open",
-								"bh_regex_close",
-								"bh_regex_content",
-								"bh_square",
-								"bh_square_center",
-								"bh_square_open",
-								"bh_square_close",
-								"bh_square_content",
 								"bh_unmatched",
 								"bh_unmatched_center",
 								"bh_unmatched_open",
 								"bh_unmatched_close",
 								"bh_unmatched_content",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close",
+								"bh_single_quote_content",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_double_quote_content",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_default_content",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_square_content",
 								"bh_tag",
 								"bh_tag_center",
 								"bh_tag_open",
@@ -1012,18 +1002,28 @@
 								"bh_angle_open",
 								"bh_angle_close",
 								"bh_angle_content",
-								"bh_double_quote",
-								"bh_double_quote_center",
-								"bh_double_quote_open",
-								"bh_double_quote_close",
-								"bh_double_quote_content"
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_round_content",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_curly_content",
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_regex_content"
 							],
 							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
 							"tab_size": 2,
 							"translate_tabs_to_spaces": true
 						},
 						"translation.x": 0.0,
-						"translation.y": 225.0,
+						"translation.y": 27.0,
 						"zoom_level": 1.0
 					},
 					"stack_index": 0,
@@ -1042,8 +1042,8 @@
 						"selection":
 						[
 							[
-								200,
-								306
+								439,
+								439
 							]
 						],
 						"settings":
@@ -1051,41 +1051,31 @@
 							"BracketHighlighterBusy": false,
 							"bh_regions":
 							[
-								"bh_single_quote",
-								"bh_single_quote_center",
-								"bh_single_quote_open",
-								"bh_single_quote_close",
-								"bh_single_quote_content",
-								"bh_curly",
-								"bh_curly_center",
-								"bh_curly_open",
-								"bh_curly_close",
-								"bh_curly_content",
-								"bh_round",
-								"bh_round_center",
-								"bh_round_open",
-								"bh_round_close",
-								"bh_round_content",
-								"bh_default",
-								"bh_default_center",
-								"bh_default_open",
-								"bh_default_close",
-								"bh_default_content",
-								"bh_regex",
-								"bh_regex_center",
-								"bh_regex_open",
-								"bh_regex_close",
-								"bh_regex_content",
-								"bh_square",
-								"bh_square_center",
-								"bh_square_open",
-								"bh_square_close",
-								"bh_square_content",
 								"bh_unmatched",
 								"bh_unmatched_center",
 								"bh_unmatched_open",
 								"bh_unmatched_close",
 								"bh_unmatched_content",
+								"bh_single_quote",
+								"bh_single_quote_center",
+								"bh_single_quote_open",
+								"bh_single_quote_close",
+								"bh_single_quote_content",
+								"bh_double_quote",
+								"bh_double_quote_center",
+								"bh_double_quote_open",
+								"bh_double_quote_close",
+								"bh_double_quote_content",
+								"bh_default",
+								"bh_default_center",
+								"bh_default_open",
+								"bh_default_close",
+								"bh_default_content",
+								"bh_square",
+								"bh_square_center",
+								"bh_square_open",
+								"bh_square_close",
+								"bh_square_content",
 								"bh_tag",
 								"bh_tag_center",
 								"bh_tag_open",
@@ -1096,11 +1086,21 @@
 								"bh_angle_open",
 								"bh_angle_close",
 								"bh_angle_content",
-								"bh_double_quote",
-								"bh_double_quote_center",
-								"bh_double_quote_open",
-								"bh_double_quote_close",
-								"bh_double_quote_content"
+								"bh_round",
+								"bh_round_center",
+								"bh_round_open",
+								"bh_round_close",
+								"bh_round_content",
+								"bh_curly",
+								"bh_curly_center",
+								"bh_curly_open",
+								"bh_curly_close",
+								"bh_curly_content",
+								"bh_regex",
+								"bh_regex_center",
+								"bh_regex_open",
+								"bh_regex_close",
+								"bh_regex_content"
 							],
 							"syntax": "Packages/Babel/JavaScript (Babel).sublime-syntax",
 							"tab_size": 2,
@@ -1113,11 +1113,6 @@
 					"stack_index": 1,
 					"type": "text"
 				}
-			]
-		},
-		{
-			"sheets":
-			[
 			]
 		}
 	],
@@ -1138,18 +1133,11 @@
 				0,
 				1,
 				1
-			],
-			[
-				1,
-				0,
-				2,
-				1
 			]
 		],
 		"cols":
 		[
 			0.0,
-			0.468634686347,
 			1.0
 		],
 		"rows":
