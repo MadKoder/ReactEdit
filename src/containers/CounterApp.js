@@ -24,4 +24,5 @@ function select(state) {
   };
 }
 
-export default connect(select)(CounterApp);
+var connected = connect(select)(CounterApp); 
+export default connected;

@@ -8,6 +8,8 @@ function between(x, min, max) {
   return (x >= min) && (x < max);
 }
 
+// Retourne le nom de la fonction la plus interne dans laquelle est le curseur, ainsi que son parent
+// Ex: f(g([curseur]) -> g, f
 function traverse(ast, cursorPosition) {
   let innerCallExpression = null;
   let innerCallExpressionParent = null;
@@ -15,17 +17,11 @@ function traverse(ast, cursorPosition) {
   estraverse.traverse(ast, {
       enter: function (node, parent) {
         const range = node.range;
-        /*if(cursorPosition > range[1]) {
-          return estraverse.VisitorOption.Break;
-        }*/
         if (node.type === 'CallExpression') {
           if(between(cursorPosition, range[0], range[1]))
           {
-            console.log("found 2");
             innerCallExpression = node;
             innerCallExpressionParent = parent;
-            console.log("fullce: " + _.toString(innerCallExpression));
-            console.log("ce: " + _.toString(innerCallExpression.callee.name));
           }
         }
       },
@@ -54,15 +50,6 @@ function parseText(text, previousTree, cursorPosition) {
   let innerCallExpression = null;
   let innerCallExpressionParent = null;
   try {
-    if(!_.isEmpty(previousTree)) {
-      console.log("not empty");
-
-      let traverseResult = traverse(previousTree, cursorPosition);
-      innerCallExpression = traverseResult.innerCallExpression;
-      console.log("innerCallExpression: " + _.toString(innerCallExpression));
-      innerCallExpressionParent = traverseResult.innerCallExpressionParent;
-    }
-
     let jsonExpression = esprima.parse(text, {range: true});
     parsedExpression = JSON.stringify(
       jsonExpression.body[0].expression,
@@ -72,33 +59,10 @@ function parseText(text, previousTree, cursorPosition) {
     tree = jsonExpression.body[0].expression;
   } catch(e) {}
 
-  let fakeInnerCallExpression = {
-      "range": [
-          0,
-          4
-      ],
-      "type": "CallExpression",
-      "callee": {
-          "range": [
-              0,
-              1
-          ],
-          "type": "Identifier",
-          "name": "f"
-      },
-      "arguments": [
-          {
-              "range": [
-                  2,
-                  3
-              ],
-              "type": "Literal",
-              "value": 3,
-              "raw": "3"
-          }
-      ]
-    };
-  // innerCallExpression = fakeInnerCallExpression;
+  if(!_.isEmpty(tree)) {
+    ({innerCallExpression, innerCallExpressionParent} = traverse(tree, cursorPosition));
+  }
+
   return {
     evaluatedExpression,
     parsedExpression,
@@ -118,6 +82,7 @@ export default class Counter extends Component {
     super(props, context);
     this.cursorPosition = 0;
     this.innerCallExpression = null;
+    this.evaluatedExpression = null;
   }
   
   handleChange(e) {
@@ -131,12 +96,12 @@ export default class Counter extends Component {
 
     this.cursorPosition = e.target.selectionStart;
     this.innerCallExpression = innerCallExpression;
+    this.evaluatedExpression = evaluatedExpression;
   }
 
   render() {
     const { text, ast } = this.props;
   
-    // let {evaluatedExpression, parsedExpression, tree} = parseText(text);
     const parsedExpression = JSON.stringify(
       ast,
       null,
@@ -154,9 +119,9 @@ export default class Counter extends Component {
           <textarea cols="50" rows="30" value={parsedExpression} disabled/>
           <TreeNode node={ast} path="" role="root"/>
         </div>
-        <div> {this.cursorPosition} </div>
-        <div> {this.innerCallExpression !== null ? this.innerCallExpression.callee.name : "none"} </div>
-        {/*<div> {evaluatedExpression} </div>*/}
+        <div> Cursor position : {this.cursorPosition} </div>
+        <div> Inner call expression : {this.innerCallExpression !== null ? this.innerCallExpression.callee.name : "none"} </div>
+        <div> Evaluated expression : {this.evaluatedExpression} </div>
       </div>
     );
   }

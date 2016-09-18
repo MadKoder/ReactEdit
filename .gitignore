@@ -48,3 +48,4 @@ Temporary Items
 
 # Node modules directory
 node_modules/
+dist/bundle.js
