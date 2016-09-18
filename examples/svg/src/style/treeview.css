@@ -1,0 +1,41 @@
+/* fonctionnel */
+.treeGroup {
+  display: none;
+}
+.groupLabel {
+  font-family: 'Arial';
+  font-size: 15px;
+}
+.treeGroup ~ ul {
+ display: none;
+}
+.treeGroup:checked ~ ul {
+ display: block;
+}
+.treeGroup ~ .closedGroup {
+  font-weight: bold;
+}
+.treeGroup ~ .openGroup {
+  display: none;
+  font-weight: bold;
+}
+.treeGroup:checked ~ .closedGroup {
+  display: none;
+}
+.treeGroup:checked ~ .openGroup {
+  display: inline;
+}
+
+/* habillage */
+li {
+  display: block;
+  font-family: 'Arial';
+  font-size: 15px;
+  padding: 0.2em;
+  border: 1px solid transparent;
+}
+li:hover {
+  border: 1px solid grey;
+  border-radius: 3px;
+  background-color: white;
+}
