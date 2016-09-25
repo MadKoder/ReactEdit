@@ -10,7 +10,7 @@ export default class Main extends Component {
   constructor(props, context) {
     super(props, context);
     this.moveBus = new Bacon.Bus();
-    let moveTimer = Bacon.interval(1000, 2);
+    let moveTimer = Bacon.interval(1000, 0);
     let mergedMove = moveTimer.merge(this.moveBus);
     mergedMove.onValue((val) => {
       this.props.move(this.props.svg.pos + val);
@@ -44,7 +44,7 @@ export default class Main extends Component {
         <svg width="1200" height="120"
           viewBox="0 0 1200 120"
           xmlns="http://www.w3.org/2000/svg">
-          <rect x={this.props.svg.pos} y="10" width="100" height="100"/>
+          <rect x={this.props.svg.pos} y="0" width="100" height="100" transform={"rotate(" + this.props.svg.rotation + ", " + (this.props.svg.pos + 50).toString() + ", 50)"}/>
         </svg>
       </div>
     );

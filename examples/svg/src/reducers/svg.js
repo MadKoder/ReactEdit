@@ -1,7 +1,8 @@
-import { INCREMENT, DECREMENT, MOVE } from '../constants/ActionTypes';
+import { INCREMENT, DECREMENT, MOVE, ROTATE } from '../constants/ActionTypes';
 
 let initialState = {
-    pos : 0
+    pos : 0,
+    rotation : 0
 };
 
 export default function svg(state = initialState, action) {
@@ -17,6 +18,10 @@ export default function svg(state = initialState, action) {
   case MOVE:
     return Object.assign({}, state, {
         pos : action.x
+    });
+  case ROTATE:
+    return Object.assign({}, state, {
+        rotation : action.x
     });
   default:
     return state;
