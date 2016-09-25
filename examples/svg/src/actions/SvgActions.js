@@ -1,4 +1,4 @@
-import { INCREMENT, DECREMENT } from '../constants/ActionTypes';
+import { INCREMENT, DECREMENT, MOVE } from '../constants/ActionTypes';
 
 export function increment() {
   return {
@@ -9,5 +9,12 @@ export function increment() {
 export function decrement() {
   return {
     type: DECREMENT
+  };
+}
+
+export function move(x) {
+  return {
+    type: MOVE,
+    x
   };
 }

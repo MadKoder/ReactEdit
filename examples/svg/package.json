@@ -8,13 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/MadKoder/ReactEdit.git.git"
+    "url": "https://github.com/MadKoder/ReactEdit.git"
   },
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/MadKoder/ReactEdit.git/issues"
   },
   "dependencies": {
+    "baconjs": "^0.7.87",
     "react": "^0.14.6",
     "react-dom": "^0.14.6",
     "react-redux": "^4.1.0",
