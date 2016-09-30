@@ -28,6 +28,10 @@ h3 {
   display: inline-block;
 }
 
+.draggable {
+  cursor: move;
+}
+
 .hGroup {
   display: flex;
   flex-direction: row;

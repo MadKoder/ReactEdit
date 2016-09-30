@@ -31,6 +31,7 @@ export default class Main extends Component {
   }
 
   render() {
+    let rotation = this.props.vars.rotation != undefined ? this.props.vars.rotation.value : 0;
     return (
       <div className="vGroup">
         <hGroup>
@@ -44,7 +45,7 @@ export default class Main extends Component {
         <svg width="1200" height="120"
           viewBox="0 0 1200 120"
           xmlns="http://www.w3.org/2000/svg">
-          <rect x={this.props.svg.pos} y="0" width="100" height="100" transform={"rotate(" + this.props.svg.rotation + ", " + (this.props.svg.pos + 50).toString() + ", 50)"}/>
+          <rect className="draggable" x={this.props.svg.pos} y="0" width="100" height="100" transform={"rotate(" + rotation + ", " + (this.props.svg.pos + 50).toString() + ", 50)"}/>
         </svg>
       </div>
     );
