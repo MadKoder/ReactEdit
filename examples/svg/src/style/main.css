@@ -37,7 +37,7 @@ h3 {
   flex-direction: row;
   align-items : center;
   background-color: white;
-  border-style: solid;
+  border-style: none;
   /*border-bottom: solid;
   border-top : solid;*/
   border-width: 1px;
@@ -50,7 +50,7 @@ h3 {
 .vGroup
 {
   background-color: white;
-  border-style: solid;
+  border-style: none;
   border-width: 1px;
   margin : 0px;
   display: flex;

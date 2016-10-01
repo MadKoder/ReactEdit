@@ -1,10 +1,15 @@
 import React, { Component, PropTypes } from 'react';
+import { bindActionCreators } from 'redux';
 import _ from 'lodash';
 import Bacon from 'baconjs';
 
+import VarsEditor from '../components/VarsEditor';
+import * as VarsActions from '../actions/VarsActions';
+
 export default class Main extends Component {
   static propTypes = {
-    svg: PropTypes.object.isRequired
+    svg: PropTypes.object.isRequired,
+    vars: PropTypes.object.isRequired
   };
 
   constructor(props, context) {
@@ -31,9 +36,10 @@ export default class Main extends Component {
   }
 
   render() {
-    let rotation = this.props.vars.rotation.value;
+    const { dispatch } = this.props;
+    const rotation = this.props.vars.rotation.value;
     return (
-      <div className="vGroup">
+      <vGroup>
         <hGroup>
           <button onClick={::this.inc}>
           +
@@ -47,7 +53,8 @@ export default class Main extends Component {
           xmlns="http://www.w3.org/2000/svg">
           <rect className="draggable" x={this.props.svg.pos} y="0" width="100" height="100" transform={"rotate(" + rotation + ", " + (this.props.svg.pos + 50).toString() + ", 50)"}/>
         </svg>
-      </div>
+        <VarsEditor vars={this.props.vars} dispatch={dispatch} {...bindActionCreators(VarsActions, dispatch)}/>
+      </vGroup>
     );
   }
 }
