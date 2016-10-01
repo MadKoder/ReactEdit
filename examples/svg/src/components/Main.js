@@ -31,7 +31,7 @@ export default class Main extends Component {
   }
 
   render() {
-    let rotation = this.props.vars.rotation != undefined ? this.props.vars.rotation.value : 0;
+    let rotation = this.props.vars.rotation.value;
     return (
       <div className="vGroup">
         <hGroup>

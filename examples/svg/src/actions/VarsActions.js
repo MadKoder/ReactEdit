@@ -1,8 +1,8 @@
-import { SET_VAR } from '../constants/ActionTypes';
+import { SET_VAR_VALUE } from '../constants/ActionTypes';
 
-export function setVar(name, value) {
+export function setVarValue(name, value) {
   return {
-    type: SET_VAR,
+    type: SET_VAR_VALUE,
     name,
     value
   };
