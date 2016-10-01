@@ -28,7 +28,11 @@ module.exports = {
     'fallback': path.join(__dirname, 'node_modules')
   },
   module: {
-    loaders: [{
+    loaders: [ {
+      test: /\.json$/,
+      loaders: ['json'],
+      include: path.join(__dirname, 'node_modules', 'escodegen')
+    }, {
       test: /\.js$/,
       loaders: ['react-hot', 'babel'],
       exclude: /node_modules/,
