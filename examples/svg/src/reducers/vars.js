@@ -2,20 +2,20 @@ import { SET_VAR_VALUE, SET_VAR_COMPUTED_EXPRESSION, ADD_VAR } from '../constant
 
 let initialState = {
   a : {
-    value : 0
+    value : 2
   },
   b : {
-    value : 0
+    value : 10
   },
   c : {
-    value : 0
+    value : 100
   },
   tick : {
     value : 0
   },
   rotation : {
     value : 0,
-    expression : "tick * 0.5"
+    expression : "tick * a"
   }
 };
 

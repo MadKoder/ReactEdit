@@ -2,6 +2,7 @@ import React, { Component, PropTypes } from 'react';
 import { bindActionCreators } from 'redux';
 import _ from 'lodash';
 
+import { evalExpressionString } from '../ast/ast.js';
 import VarEditor from '../components/VarEditor';
 import * as VarsActions from '../actions/VarsActions';
 
@@ -21,6 +22,15 @@ export default class VarsEditor extends Component {
       // A store var string is of the form "name=value"
       let splittedString = _.split(newVarStr, "=");
       if(splittedString.length == 2) {
+        // Evaluate the expression
+        let expressionString = splittedString[1];
+        let val = evalExpressionString(expressionString);
+        if(val !== null) {
+          let name = splittedString[0];
+          this.props.addVar(name, val);
+          // Reinitialise the input area
+          e.target.value = "";
+        }
       } else {
         // A computed string is of the form "name expression", with on or more whitespace between name and expression
         splittedString = _.split(newVarStr, " ");

@@ -6,6 +6,7 @@ import esprima from 'esprima';
 import estraverse from 'estraverse';
 import escodegen from 'escodegen';
 
+import { adaptExpressionToStore } from './ast/ast.js';
 import configureStore from './store/configureStore';
 import Root from './containers/Root';
 import './style/main.css';
@@ -43,83 +44,18 @@ window.updateFunctions = updateFunctions;
 
 function updateComputedExpression(expression, name)
 {
-  let ast = null;
-  try {
-    ast = esprima.parse(expression).body[0];
-  } catch(e) {
-    // Expression cannot be parsed, don't do anything
+  let expressionString = adaptExpressionToStore(expression);
+  if(expressionString === null) {
     return;
   }
-  estraverse.replace(ast, {
-      enter: function (node, parent) {
-        if (node.type === 'Identifier') {
-          // We don't want the new node to be traversed
-          this.skip();
-          // Replace node identifier (e.g. "x") by
-          // "window.store.getState().vars.x.value"
-          return {
-            "type": "MemberExpression",
-            "computed": false,
-            "object": {
-              "type": "MemberExpression",
-              "computed": false,
-              "object": {
-                "type": "MemberExpression",
-                "computed": false,
-                "object": {
-                  "type": "CallExpression",
-                  "callee": {
-                    "type": "MemberExpression",
-                    "computed": false,
-                    "object": {
-                      "type": "MemberExpression",
-                      "computed": false,
-                      "object": {
-                        "type": "Identifier",
-                        "name": "window"
-                      },
-                      "property": {
-                        "type": "Identifier",
-                        "name": "store"
-                      }
-                    },
-                    "property": {
-                      "type": "Identifier",
-                      "name": "getState"
-                    }
-                  },
-                  "arguments": []
-                },
-                "property": {
-                  "type": "Identifier",
-                  "name": "vars"
-                }
-              },
-              "property": {
-                "type": "Identifier",
-                "name": node.name
-              }
-            },
-            "property": {
-              "type": "Identifier",
-              "name": "value"
-            }
-          }
-        }
-      },
-      leave: function (node, parent) {
-      }
-  });
-  let expressionString = escodegen.generate(ast);
-  
-  // Test the expression, it may be invalid
+
+  // Test the expression, it may be invalid in the context
   try {
     (window.execScript || window.eval)(expressionString);
   } catch(e) {
     return;
   }
-
-  // The string last character is ";", we don't want it
+    // The string last character is ";", we don't want it
   expressionString = expressionString.substring(0, expressionString.length - 1);
   let evalStr = "window.updateFunctions['" + name + "'] = () => {\n" +
     "window.varsActionCreators.setVarValue('" + name + "', " + expressionString + ");};";
@@ -175,6 +111,13 @@ store.subscribe(() => {
       (previousExpression !== expression)
     ) {
       updateComputedExpression(expression, name);
+    }
+  });
+  // Remove update functions for removed expressions
+  _.forOwn(previousExpressions, (expression, name) => {
+    let currentExpression = currentExpressions[name];
+    if(currentExpression === undefined) {
+      delete window.updateFunctions[name];
     }
   });
 });
