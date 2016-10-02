@@ -1,4 +1,4 @@
-import { SET_VAR_VALUE, SET_VAR_COMPUTED_EXPRESSION } from '../constants/ActionTypes';
+import { SET_VAR_VALUE, SET_VAR_COMPUTED_EXPRESSION, ADD_VAR } from '../constants/ActionTypes';
 
 export function setVarValue(name, value) {
   return {
@@ -12,6 +12,15 @@ export function setVarComputedExpression(name, expression) {
   return {
     type: SET_VAR_COMPUTED_EXPRESSION,
     name,
+    expression
+  };
+}
+
+export function addVar(name, value, expression) {
+  return {
+    type: ADD_VAR,
+    name,
+    value,
     expression
   };
 }

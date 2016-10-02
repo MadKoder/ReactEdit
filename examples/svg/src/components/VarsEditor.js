@@ -14,6 +14,30 @@ export default class VarsEditor extends Component {
     super(props, context);
   }
 
+  handleNewVar(e) {
+    // If enter has been pressed
+    if(e.charCode == 13) {
+      let newVarStr = e.target.value;
+      // A store var string is of the form "name=value"
+      let splittedString = _.split(newVarStr, "=");
+      if(splittedString.length == 2) {
+      } else {
+        // A computed string is of the form "name expression", with on or more whitespace between name and expression
+        splittedString = _.split(newVarStr, " ");
+        if(splittedString.length >= 2) {
+          let name = splittedString[0];
+          let expression = _.tail(splittedString).join(" ");
+          this.props.addVar(name, null, expression);
+          // Reinitialise the input area
+          e.target.value = "";
+        }
+      }
+      // We don't want enter key to be handled
+      e.preventDefault();
+      return false;
+    }
+  }
+
   render() {
     const {vars, dispatch} = this.props;
     let childNodes = [];
@@ -29,7 +53,8 @@ export default class VarsEditor extends Component {
 
     return (
       <div className="vGroup">
-        {childNodes}            
+        {childNodes}
+        <textarea cols="40" rows="1" onKeyPress={::this.handleNewVar} autofocus/>
       </div>
     );
   }

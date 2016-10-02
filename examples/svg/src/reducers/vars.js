@@ -1,4 +1,4 @@
-import { SET_VAR_VALUE, SET_VAR_COMPUTED_EXPRESSION } from '../constants/ActionTypes';
+import { SET_VAR_VALUE, SET_VAR_COMPUTED_EXPRESSION, ADD_VAR } from '../constants/ActionTypes';
 
 let initialState = {
   a : {
@@ -36,6 +36,15 @@ export default function vars(state = initialState, action) {
     varObj = Object.assign({}, varObj, {
       expression : action.expression
     });
+    let newState = Object.assign({}, state);
+    newState[action.name] = varObj;
+    return newState;
+  }
+  case ADD_VAR: {
+    let varObj = {
+      value : action.value,
+      expression : action.expression
+    };
     let newState = Object.assign({}, state);
     newState[action.name] = varObj;
     return newState;

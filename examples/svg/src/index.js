@@ -121,7 +121,7 @@ function updateComputedExpression(expression, name)
 
   // The string last character is ";", we don't want it
   expressionString = expressionString.substring(0, expressionString.length - 1);
-  let evalStr = "window.updateFunctions['rotation'] = () => {\n" +
+  let evalStr = "window.updateFunctions['" + name + "'] = () => {\n" +
     "window.varsActionCreators.setVarValue('" + name + "', " + expressionString + ");};";
     // "window.varsActionCreators.setVarValue('rotation', window.store.getState().vars.tick.value * 2);};";
   (window.execScript || window.eval)(evalStr);
@@ -136,6 +136,10 @@ rotateTimer.onValue((val) => {
     func();
   });
   varsActionCreators.setVarValue("tick", tick + val);
+  if(tick == 20) {
+    // varsActionCreators.addVar("newVar", 20);
+    // varsActionCreators.addVar("newComputedVar", null, "tick * 10");
+  }
 });
 
 // Store subscriber to update computed expressions
@@ -162,6 +166,7 @@ store.subscribe(() => {
     })
     .value();
 
+  // Update new or changed expressions
   _.forOwn(currentExpressions, (expression, name) => {
     let previousExpression = previousExpressions[name];
     // If expression is new or has changed, update it
@@ -172,15 +177,6 @@ store.subscribe(() => {
       updateComputedExpression(expression, name);
     }
   });
-  // Make a list of pairs[name, expression], and partitions them depending if they are new or changed, 
-  let newOrChangedAndRemovedExpressions = _(currentExpressions)
-    .toPairs()
-    .partition(value => {
-      let name = value[0];
-      return name in previousExpressions;
-    })
-    .value();
-  let newOrChangedExpressions = _.filter
 });
 
 ///////////////////////////////////

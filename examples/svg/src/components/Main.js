@@ -23,22 +23,22 @@ export default class Main extends Component {
     const { dispatch } = this.props;
     const rotation = this.props.vars.rotation.value;
     return (
-      <vGroup>
-        <hGroup>
+      <div className="vGroup">
+        <div className="hGroup">
           <button onClick={::this.inc}>
           +
           </button>
           <button onClick={::this.dec}>
           -
           </button>
-        </hGroup>
+        </div>
         <svg width="1200" height="120"
           viewBox="0 0 1200 120"
           xmlns="http://www.w3.org/2000/svg">
           <rect className="draggable" x={this.props.svg.pos} y="0" width="100" height="100" transform={"rotate(" + rotation + ", " + (this.props.svg.pos + 50).toString() + ", 50)"}/>
         </svg>
         <VarsEditor vars={this.props.vars} dispatch={dispatch} {...bindActionCreators(VarsActions, dispatch)}/>
-      </vGroup>
+      </div>
     );
   }
 }
