@@ -21,7 +21,7 @@ export default class VarsEditor extends Component {
       let varObject = {
         name : key,
         value : value.value,
-        computed : value.computed
+        expression : value.expression
       };
       let childNode = <VarEditor key={key} dispatch={dispatch} {...bindActionCreators(VarsActions, dispatch)} {...varObject}/>;
       childNodes.push(childNode);

@@ -41,16 +41,16 @@ let updateFunctions = {
 };
 window.updateFunctions = updateFunctions;
 
-function updateComputedExpression(state)
+function updateComputedExpression(expression, name)
 {
-  let rotationAst = null;
+  let ast = null;
   try {
-    rotationAst = esprima.parse(state.vars.rotation.computed).body[0];
+    ast = esprima.parse(expression).body[0];
   } catch(e) {
     // Expression cannot be parsed, don't do anything
     return;
   }
-  estraverse.replace(rotationAst, {
+  estraverse.replace(ast, {
       enter: function (node, parent) {
         if (node.type === 'Identifier') {
           // We don't want the new node to be traversed
@@ -110,24 +110,24 @@ function updateComputedExpression(state)
       leave: function (node, parent) {
       }
   });
-  let computedString = escodegen.generate(rotationAst);
+  let expressionString = escodegen.generate(ast);
   
   // Test the expression, it may be invalid
   try {
-    (window.execScript || window.eval)(computedString);
+    (window.execScript || window.eval)(expressionString);
   } catch(e) {
     return;
   }
 
   // The string last character is ";", we don't want it
-  computedString = computedString.substring(0, computedString.length - 1);
+  expressionString = expressionString.substring(0, expressionString.length - 1);
   let evalStr = "window.updateFunctions['rotation'] = () => {\n" +
-    "window.varsActionCreators.setVarValue('rotation', " + computedString + ");};";
+    "window.varsActionCreators.setVarValue('" + name + "', " + expressionString + ");};";
     // "window.varsActionCreators.setVarValue('rotation', window.store.getState().vars.tick.value * 2);};";
   (window.execScript || window.eval)(evalStr);
 }
 
-updateComputedExpression(state);
+updateComputedExpression(state.vars.rotation.expression, "rotation");
 let rotateTimer = Bacon.interval(50, 1);
 rotateTimer.onValue((val) => {
   let state = store.getState();
@@ -138,14 +138,49 @@ rotateTimer.onValue((val) => {
   varsActionCreators.setVarValue("tick", tick + val);
 });
 
-let currentValue = null;
+// Store subscriber to update computed expressions
+let currentExpressions = {};
 store.subscribe(() => {
-  let previousValue = currentValue;
-  currentValue = store.getState().vars.rotation.computed;
+  let previousExpressions = currentExpressions;
+  // Filter only var that are computed, and map only the expressions of these vars, i.e.
+  // {
+  //   computed : {
+  //     value : ...
+  //     expression : "a * b"
+  //   }
+  // } => 
+  // {
+  //   computed : "a * b"
+  // }
+  let vars = store.getState().vars;
+  currentExpressions = _(vars)
+    .pickBy((value, name) => {
+      return value["expression"] !== undefined;
+    })
+    .mapValues((value, name) => {
+      return value.expression;
+    })
+    .value();
 
-  if (previousValue !== currentValue) {
-    updateComputedExpression(store.getState());
-  }
+  _.forOwn(currentExpressions, (expression, name) => {
+    let previousExpression = previousExpressions[name];
+    // If expression is new or has changed, update it
+    if(
+      (previousExpression === undefined) ||
+      (previousExpression !== expression)
+    ) {
+      updateComputedExpression(expression, name);
+    }
+  });
+  // Make a list of pairs[name, expression], and partitions them depending if they are new or changed, 
+  let newOrChangedAndRemovedExpressions = _(currentExpressions)
+    .toPairs()
+    .partition(value => {
+      let name = value[0];
+      return name in previousExpressions;
+    })
+    .value();
+  let newOrChangedExpressions = _.filter
 });
 
 ///////////////////////////////////

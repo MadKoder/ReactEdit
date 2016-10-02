@@ -19,10 +19,10 @@ export default class VarEditor extends Component {
   }
 
   render() {
-    const {value, name, computed} = this.props;
-    if(computed !== undefined && !this.focused) {
+    const {value, name, expression} = this.props;
+    if(expression !== undefined && !this.focused) {
       this.computedExpressionElement = (
-        <textarea cols="30" rows="1" defaultValue={computed} onChange={::this.handleChange} onFocus={::this.handleFocus}/>
+        <textarea cols="30" rows="1" defaultValue={expression} onChange={::this.handleChange} onFocus={::this.handleFocus}/>
       )
     }
     return (

@@ -15,7 +15,7 @@ let initialState = {
   },
   rotation : {
     value : 0,
-    computed : "tick * 0.5"
+    expression : "tick * 0.5"
   }
 };
 
@@ -34,7 +34,7 @@ export default function vars(state = initialState, action) {
   case SET_VAR_COMPUTED_EXPRESSION: {
     let varObj = state[action.name];
     varObj = Object.assign({}, varObj, {
-      computed : action.expression
+      expression : action.expression
     });
     let newState = Object.assign({}, state);
     newState[action.name] = varObj;
