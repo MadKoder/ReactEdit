@@ -60,7 +60,7 @@ export default class VarEditor extends Component {
     return (
     <div className="hGroup">
       <textarea cols="10" rows="1" value={name} disabled/>
-      <textarea cols="30" rows="1" defaultValue={value} value={this.valueFocused ? undefined : value} onKeyPress={::this.handleValueChange} 
+      <textarea cols="30" rows="1" defaultValue={value} value={this.valueFocused ? undefined : value} onChange={::this.handleValueChange}  onKeyPress={::this.handleValueChange} 
         disabled={this.computedExpressionElement !== null} onFocus={::this.handleValueFocus} onBlur={::this.handleValueBlur}/>
       {this.computedExpressionElement}
     </div>);
