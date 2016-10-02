@@ -1,7 +1,6 @@
 import React, { Component, PropTypes } from 'react';
 import { bindActionCreators } from 'redux';
 import _ from 'lodash';
-import Bacon from 'baconjs';
 
 import VarsEditor from '../components/VarsEditor';
 import * as VarsActions from '../actions/VarsActions';
@@ -12,27 +11,12 @@ export default class Main extends Component {
     vars: PropTypes.object.isRequired
   };
 
-  constructor(props, context) {
-    super(props, context);
-    this.moveBus = new Bacon.Bus();
-    let moveTimer = Bacon.interval(1000, 0);
-    let mergedMove = moveTimer.merge(this.moveBus);
-    mergedMove.onValue((val) => {
-      this.props.move(this.props.svg.pos + val);
-    });
-  }
-  
-  handleChange(e) {
-  }
-
   inc(e) {
-    this.moveBus.push(1);
-    // this.props.increment();
+    this.props.move(this.props.svg.pos + 1);
   }
 
   dec(e) {
-    this.moveBus.push(-1);
-    // this.props.decrement();
+    this.props.move(this.props.svg.pos - 1);
   }
 
   render() {

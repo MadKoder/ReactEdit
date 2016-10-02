@@ -131,7 +131,6 @@ updateComputedExpression(state);
 let rotateTimer = Bacon.interval(50, 1);
 rotateTimer.onValue((val) => {
   let state = store.getState();
-  svgActionCreators.rotate(state.svg.rotation + val);
   let tick = state.vars.tick.value;
   _.forOwn(updateFunctions, function(func, name) {
     func();
