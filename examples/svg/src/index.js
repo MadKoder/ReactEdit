@@ -82,6 +82,7 @@ rotateTimer.onValue((val) => {
 let currentExpressions = {};
 store.subscribe(() => {
   let previousExpressions = currentExpressions;
+  // From computed vars, make a dict from name to expression
   // Filter only var that are computed, and map only the expressions of these vars, i.e.
   // {
   //   computed : {
@@ -95,7 +96,7 @@ store.subscribe(() => {
   let vars = store.getState().vars;
   currentExpressions = _(vars)
     .pickBy((value, name) => {
-      return value["expression"] !== undefined;
+      return value["computed"];
     })
     .mapValues((value, name) => {
       return value.expression;
@@ -115,8 +116,10 @@ store.subscribe(() => {
   });
   // Remove update functions for removed expressions
   _.forOwn(previousExpressions, (expression, name) => {
-    let currentExpression = currentExpressions[name];
-    if(currentExpression === undefined) {
+    let currentExpression = vars[name];
+    if(
+      (currentExpression === undefined) ||
+      (!currentExpression.computed)) {
       delete window.updateFunctions[name];
     }
   });

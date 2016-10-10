@@ -16,11 +16,12 @@ export function setVarComputedExpression(name, expression) {
   };
 }
 
-export function addVar(name, value, expression) {
+export function addVar(name, value, expression, computed=false) {
   return {
     type: ADD_VAR,
     name,
     value,
-    expression
+    expression,
+    computed
   };
 }

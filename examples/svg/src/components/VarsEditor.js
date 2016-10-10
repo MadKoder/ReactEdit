@@ -19,15 +19,15 @@ export default class VarsEditor extends Component {
     // If enter has been pressed
     if(e.charCode == 13) {
       let newVarStr = e.target.value;
-      // A store var string is of the form "name=value"
       let splittedString = _.split(newVarStr, "=");
+      // A store var string is of the form "name=value"
       if(splittedString.length == 2) {
         // Evaluate the expression
         let expressionString = splittedString[1];
         let val = evalExpressionString(expressionString);
         if(val !== null) {
-          let name = splittedString[0];
-          this.props.addVar(name, val);
+          let name = _.trim(splittedString[0]);
+          this.props.addVar(name, val, expressionString, false);
           // Reinitialise the input area
           e.target.value = "";
         }
@@ -37,7 +37,7 @@ export default class VarsEditor extends Component {
         if(splittedString.length >= 2) {
           let name = splittedString[0];
           let expression = _.tail(splittedString).join(" ");
-          this.props.addVar(name, null, expression);
+          this.props.addVar(name, null, expression, true);
           // Reinitialise the input area
           e.target.value = "";
         }
@@ -55,7 +55,8 @@ export default class VarsEditor extends Component {
       let varObject = {
         name : key,
         value : value.value,
-        expression : value.expression
+        expression : value.expression,
+        computed : value.computed
       };
       let childNode = <VarEditor key={key} dispatch={dispatch} {...bindActionCreators(VarsActions, dispatch)} {...varObject}/>;
       childNodes.push(childNode);
