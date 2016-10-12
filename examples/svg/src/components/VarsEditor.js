@@ -13,23 +13,27 @@ export default class VarsEditor extends Component {
 
   constructor(props, context) {
     super(props, context);
+    this.newVarHistory = [];
+    this.newVarHistoryIndex = 1;
   }
 
   handleNewVar(e) {
     // If enter has been pressed
-    if(e.charCode == 13) {
+    if(e.keyCode == 13) {
       let newVarStr = e.target.value;
       let splittedString = _.split(newVarStr, "=");
       // A store var string is of the form "name=value"
       if(splittedString.length == 2) {
         // Evaluate the expression
-        let expressionString = splittedString[1];
+        let expressionString = _.trim(splittedString[1]);
         let val = evalExpressionString(expressionString);
         if(val !== null) {
           let name = _.trim(splittedString[0]);
           this.props.addVar(name, val, expressionString, false);
           // Reinitialise the input area
           e.target.value = "";
+          this.newVarHistory.push(newVarStr);          
+          this.newVarHistoryIndex = this.newVarHistory.length;
         }
       } else {
         // A computed string is of the form "name expression", with on or more whitespace between name and expression
@@ -40,7 +44,29 @@ export default class VarsEditor extends Component {
           this.props.addVar(name, null, expression, true);
           // Reinitialise the input area
           e.target.value = "";
+          this.newVarHistory.push(newVarStr);
+          this.newVarHistoryIndex = this.newVarHistory.length;
         }
+      }
+      // We don't want enter key to be handled
+      e.preventDefault();
+      return false;
+    } else if(e.keyCode == 38) { // Up arrow key
+      if(this.newVarHistoryIndex > 0) {
+        this.newVarHistoryIndex -= 1;
+      }
+       e.target.value = this.newVarHistory[this.newVarHistoryIndex];
+      // We don't want enter key to be handled
+      e.preventDefault();
+      return false;
+    } else if(e.keyCode == 40) { // Down arrow key
+      if(this.newVarHistoryIndex < this.newVarHistory.length) {
+        this.newVarHistoryIndex += 1;
+      }
+      if(this.newVarHistoryIndex < this.newVarHistory.length) {
+        e.target.value = this.newVarHistory[this.newVarHistoryIndex];
+      } else {
+        e.target.value = "";
       }
       // We don't want enter key to be handled
       e.preventDefault();
@@ -65,7 +91,7 @@ export default class VarsEditor extends Component {
     return (
       <div className="vGroup">
         {childNodes}
-        <textarea cols="40" rows="1" onKeyPress={::this.handleNewVar} autofocus/>
+        <textarea cols="40" rows="1" onKeyDown={::this.handleNewVar} autofocus/>
       </div>
     );
   }
