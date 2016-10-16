@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import Main from '../components/Main';
 import * as SvgActions from '../actions/SvgActions';
 import * as VarsActions from '../actions/VarsActions';
+import * as JsonTreeActions from '../actions/JsonTree';
 
 class SvgApp extends Component {
 
@@ -13,6 +14,7 @@ class SvgApp extends Component {
       <Main svg={svg} vars={vars} dispatch={dispatch}
         {...bindActionCreators(SvgActions, dispatch)}
         {...bindActionCreators(VarsActions, dispatch)}
+        {...bindActionCreators(JsonTreeActions, dispatch)}
       />
     );
   }

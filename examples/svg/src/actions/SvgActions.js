@@ -1,8 +1,7 @@
-import { MOVE } from '../constants/ActionTypes';
+import { SET_ROOT_SVG } from '../constants/ActionTypes';
 
-export function move(x) {
+export function setRootSvg(svg) {
   return {
-    type: MOVE,
-    x
+    type: SET_ROOT_SVG
   };
 }

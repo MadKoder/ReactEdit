@@ -42,6 +42,10 @@ module.exports = {
       loaders: ['style', 'css'],
       exclude: /node_modules/,
       include: path.join(__dirname, 'src')
-    }]
-  }
+    }, {
+      test: /\.scss$/,
+      loaders: ["style", "css", "sass"],
+      include: path.join(__dirname, 'src')
+    }
+  ] }
 };

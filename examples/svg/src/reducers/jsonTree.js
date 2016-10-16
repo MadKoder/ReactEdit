@@ -1,31 +1,16 @@
-import { add, update, remove, desimplify, simplify } from 'simplifr'
 import { ADD_OBJECT, ADD_ARRAY, UPDATE, REMOVE_OBJECT, REMOVE_ARRAY, TOGGLE } from '../actions/JsonTree'
-import { SET_ROOT_SVG } from '../constants/ActionTypes';
+import { add, update, remove, desimplify } from 'simplifr'
 
-let initialState = {
-  svgRoot : {
-    pos : 10,
-    rotation : 0
-  }
-};
-
-initialState = simplify(initialState);
-// initialState.type = "object";
-// initialState.childs = ["root.root"];
-// initialState.expanded = true;
-
-export default function svg(state = initialState, action) {
+export function reducer(state = {}, action){
   const { path, value, key } = action
 
+  if (typeof path === 'undefined') {
+    return state
+  }
   switch (action.type) {
-    case SET_ROOT_SVG:
-      return Object.assign({}, state, {
-        root : action.svg
-      });
-
     case ADD_OBJECT:
-        if (key === '') return state
-        return add(Object.assign({}, state), path, { [key]: getValue(value) })
+      if (key === '') return state
+      return add(Object.assign({}, state), path, { [key]: getValue(value) })
 
     case ADD_ARRAY:
       return add(Object.assign({}, state), path, getValue(value))
@@ -52,12 +37,10 @@ export default function svg(state = initialState, action) {
           expanded: value === undefined ? !state[path].expanded : value
         })
       })
-
     default:
-      return state;
+      return state
   }
 }
-
 
 function getValue(value){
   let _ = value

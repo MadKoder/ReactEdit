@@ -1,0 +1,52 @@
+.redux-json-tree {
+  ul {
+    margin: 0;
+    list-style: none;
+    padding-left: 1em;
+  }
+  .object { cursor: pointer; }
+  .array { cursor: pointer; }
+  .count {
+    opacity: .5;
+    font-style: italic;
+  }
+  .leaf {
+    input {
+      width: 50px;
+      height: 15px;
+    }
+  }
+  .bracket { opacity: .5; }
+  .add { display: inline-block; opacity: .5; color: green; margin: 0px 2px; font-weight: bold; cursor: pointer; }
+  .remove { display: inline-block; opacity: .5; color: red; margin: 0px 2px; font-weight: bold; cursor: pointer; }
+  .hidden { display: none; }
+  .not-visible { visibility: hidden; }
+}
+
+/* Arrow */
+.redux-json-tree-arrow {
+  color: rgb(255, 32, 5);
+  opacity: .5;
+  border-left: 4px solid transparent;
+  border-right: 4px solid transparent;
+  border-top-width: 5px;
+  border-top-style: solid;
+
+  display: inline-block;
+  margin-left: 0;
+  margin-top: 6px;
+  margin-right: 2px;
+  float: left;
+  -webkit-transition: 200ms;
+  transition: 200ms;
+  -webkit-transform: rotateZ(-90deg);
+  transform: rotateZ(-90deg);
+  position: relative;
+  cursor: pointer;
+
+  &.open {
+    -webkit-transform: rotateZ(0deg);
+    transform: rotateZ(0deg);
+    opacity: 1;
+  }
+}
