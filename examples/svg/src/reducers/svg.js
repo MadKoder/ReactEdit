@@ -2,12 +2,13 @@ import { add, update, remove, desimplify, simplify } from 'simplifr'
 import { ADD_OBJECT, ADD_ARRAY, UPDATE, REMOVE_OBJECT, REMOVE_ARRAY, TOGGLE } from '../actions/JsonTree'
 import { SET_ROOT_SVG } from '../constants/ActionTypes';
 
-let initialState = {
-  svgRoot : {
+let initialState = [
+  {
+    type : "rect",
     pos : 10,
     rotation : 0
   }
-};
+];
 
 initialState = simplify(initialState);
 // initialState.type = "object";

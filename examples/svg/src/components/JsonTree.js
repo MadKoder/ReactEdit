@@ -102,16 +102,17 @@ export default class JsonTree extends Component {
   }
   renderNode(){
     const { data, path, level, tree } = this.props
+    const isInArray= (data.type === 'array');
     const list = data.childs.map( (key) => {
       const childPath = path + '.' + key;
-      return <li>
+      return <li key={key}>
         <JsonTree
           {...this.props}
           data={tree[childPath]}
           path={childPath}
           level={level + 1}
-          isInArray={data.type === 'array'}
-          k={childPath.split(".").pop()}
+          isInArray={isInArray}
+          k={key}
         />
       </li>
     });

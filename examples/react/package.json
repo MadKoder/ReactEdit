@@ -1,7 +1,7 @@
 {
   "name": "SVG",
   "version": "0.0.0",
-  "description": "SVG examples based on react",
+  "description": "React examples",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
@@ -15,16 +15,10 @@
     "url": "https://github.com/MadKoder/ReactEdit.git/issues"
   },
   "dependencies": {
-    "baconjs": "^0.7.87",
-    "esprima": "^3.0.0",
-    "json-loader": "^0.5.4",
     "mobx": "^2.6.0",
+    "mobx-react": "^3.5.8",
     "react": "^0.14.6",
-    "react-dom": "^0.14.6",
-    "react-redux": "^4.1.0",
-    "redux": "^3.1.1",
-    "redux-json-tree": "0.0.7",
-    "redux-thunk": "^1.0.3"
+    "react-dom": "^0.14.6"
   },
   "devDependencies": {
     "babel-cli": "^6.3.17",
@@ -35,13 +29,9 @@
     "babel-preset-stage-0": "^6.3.13",
     "classnames": "^2.2.3",
     "css-loader": "^0.23.1",
-    "escodegen": "^1.8.1",
     "node-libs-browser": "^0.5.2",
     "node-sass": "^3.10.1",
     "react-hot-loader": "^1.3.0",
-    "redux-devtools": "^3.0.1",
-    "redux-devtools-dock-monitor": "^1.0.1",
-    "redux-devtools-log-monitor": "^1.0.2",
     "sass-loader": "^4.0.2",
     "style-loader": "^0.13.0",
     "webpack": "^1.13.2",

@@ -27,8 +27,9 @@ export default class Main extends Component {
   render() {
     const { dispatch } = this.props;
     const rotation = this.props.vars.rotation.value;
-    const pos = 0;
-    const tree = this.props.svg;
+    const svgTree = this.props.svg;
+    const pos = svgTree["root.0.pos"];
+    // const pos = 0;
     const path = "root";
     return (
       <div className="vGroup">
@@ -44,7 +45,7 @@ export default class Main extends Component {
           <Rectangle x={pos} y="0" width="100" height="100" transform={"rotate(" + rotation + ", " + (pos + 50).toString() + ", 50)"}/>
         </svg>
         <VarsEditor vars={this.props.vars} dispatch={dispatch} {...bindActionCreators(VarsActions, dispatch)}/>
-        <JsonTree path={path} data={tree[path]} k={path.split(".").pop()} tree={tree} initExpandedLevel={2} {...this.props}/>
+        <JsonTree path={path} data={svgTree[path]} k={path.split(".").pop()} tree={svgTree} initExpandedLevel={2} {...this.props}/>
       </div>
     );
   }
