@@ -8,6 +8,25 @@ import './style/main.css';
 let initialText = "toto";
 let editedText = observable(initialText);
 
+const leftKeyCode = 37;
+const rightKeyCode = 39;
+const upKeyCode = 38;
+const downKeyCode = 40;
+const spaceKeyCode = 32;
+
+const documentKeyDownHandle = e => {
+  var keyCode = e.keyCode != 0 ? e.keyCode : e.which;  
+  if(keyCode == upKeyCode) {
+    rotationIncrement += 0.01;
+    e.preventDefault();
+  } else if(keyCode == downKeyCode) {
+    rotationIncrement -= 0.01;
+    e.preventDefault();
+  }
+};
+
+document.addEventListener("keydown", documentKeyDownHandle, false);
+
 const handleKey = e => {
   const id = e.target.id;
   if(id == "text") {
@@ -16,6 +35,7 @@ const handleKey = e => {
     const parsed = parseFloat(e.target.value);
     svgAttr.rotationSpeed = isNaN(parsed) ? 1. : parsed;
   }
+  return true;
 };
 
 const LineEdit = ({initialText, ...props}) =>
@@ -61,10 +81,11 @@ const Svg = observer(({svgAttr}) =>
 );
 
 let growing = true;
+let rotationIncrement = 1;
 
 setInterval(
   () => {
-    svgAttr.rotation = svgAttr.rotation + 1;
+    svgAttr.rotation = svgAttr.rotation + rotationIncrement;
     let width = svgAttr.outerPathStyle.strokeWidth + (growing ? .001 : -0.002);
     if(width > 0.2) {
       growing = false;

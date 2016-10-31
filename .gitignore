@@ -50,3 +50,5 @@ Temporary Items
 node_modules/
 bundle.js
 *.sublime-workspace
+*.sublime-project
+examples/react/npm-debug.log
