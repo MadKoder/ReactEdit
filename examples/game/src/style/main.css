@@ -1,5 +1,9 @@
 body {
-    background-color: #202020;
+    background-color: #003200;
+}
+
+.cell:hover {
+  fill : #EB0202;
 }
 
 .hGroup {
@@ -17,7 +21,7 @@ body {
 
 /* CSS - Cascading Style Sheet */
 /* Palette color codes */
-/* Palette URL: http://paletton.com/#uid=3000u0kuiiUvNtru4nlwudexs7O */
+/* Palette URL: http://paletton.com/#uid=4000u0kuiiUvNtru4nlwudexs7O */
 
 /* Feel free to copy&paste color codes to your application */
 
@@ -41,4 +45,10 @@ body {
 .color-secondary-2-2 { color: #77AE0A }
 .color-secondary-2-3 { color: #426200 }
 .color-secondary-2-4 { color: #273A00 }
+
+.color-complement-0 { color: #067806 }	/* Main Complement color */
+.color-complement-1 { color: #01BC01 }
+.color-complement-2 { color: #099509 }
+.color-complement-3 { color: #005400 }
+.color-complement-4 { color: #003200 }
 
