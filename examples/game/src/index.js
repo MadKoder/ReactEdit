@@ -35,8 +35,11 @@ const makeCellAttrib = (x, y, style) => ({
 });
 
 const handleMouseOver = e => {
-  if(e.type == "mouseover") {  
-    const strId = e.target.id;
+  const strId = e.target.id;
+  if(strId == "baseTower") {
+    return true;
+  }
+  if(e.type == "mouseover") {
     let splittedString = _.split(strId, "-");
     hoveredCellId.set(parseInt(splittedString[1]));
   } else {
@@ -65,7 +68,7 @@ const filledManaMeterStyle = observable(Object.assign({}, manaMeterStyle, {
 
 
 const manaMeterHeight = 100;
-const manaMeterWidth = 150;
+const manaMeterWidth = 50;
 const maxMana = 100;
 
 const textStyle={
@@ -84,8 +87,7 @@ const textBoundingRectStyle = {
 }
 
 const textBaseLine = 15;
-// const textBoundingSvgHeight = textBaseLine + 2;
-const textBoundingSvgHeight = textBaseLine + 42;
+const textBoundingSvgHeight = textBaseLine + 2;
 const textBoundingRectHeight = textBoundingSvgHeight;
 
 const ManaMeter = observer(({mana}) => {
@@ -99,11 +101,6 @@ const ManaMeter = observer(({mana}) => {
         y={manaMeterHeight - filledHeight} width={manaMeterWidth} height={filledHeight} style={filledManaMeterStyle}
       />
       <svg y={manaMeterHeight + 20} width={manaMeterWidth} height={textBoundingSvgHeight} style={innerSvgStyle}>
-      <foreignObject x="0" y="40" width="100" height="20">
-        <body xmlns="http://www.w3.org/1999/xhtml">
-            <textarea cols="30" rows="1" defaultValue={mana}/>
-        </body>
-        </foreignObject>
         <text 
           fontFamily="Consolas"
           fontSize="20" style={textStyle} x="1" y={textBaseLine}>
@@ -115,20 +112,48 @@ const ManaMeter = observer(({mana}) => {
   );
 });
 
+const towerStyle = observable({
+  stroke: 'mediumspringgreen',
+  fill : 'black'
+});
+
+const towerAttribs = observable({
+  x : nbCellH / 2,
+  y : 15,
+  style : towerStyle
+});
+
+const Tower = observer(({attribs}) => 
+  <circle 
+    id="baseTower"
+    style={attribs.style} 
+    cx={(attribs.x * cellWidth) - (cellWidth / 2)}
+    cy={(attribs.y * cellHeight) + (cellHeight / 2)}
+    r={cellWidth / 3}
+    onMouseOver={handleMouseOver} onMouseOut={handleMouseOver}
+  />
+);
+
+const makeBoardSvg = (cellStyle) => (
+  _(_.range(nbCellH * nbCellV).map(cellIndex => {
+    const y = Math.floor(cellIndex / nbCellH);
+    const x = cellIndex % nbCellH;
+    return (
+      <Cell key={cellIndex} cellAttrib={makeCellAttrib(x, y, cellStyle)}/>
+    )
+  }))
+  .concat(
+    <Tower key="baseTower" attribs={towerAttribs}/>
+  )
+  .value()
+);
+
 const Board = observer(({cellStyle}) => 
   <div>
   <svg xmlns="http://www.w3.org/2000/svg"  y={0} width={boardWidth} height={boardHeight} viewBox={"0 0 " + boardWidth.toString() + " " + boardHeight.toString()}>
     <ManaMeter mana={20} />
     <svg x={manaMeterWidth + 50}>
-      {
-        _.range(nbCellH * nbCellV).map(cellIndex => {
-          const y = Math.floor(cellIndex / nbCellH);
-          const x = cellIndex % nbCellH;
-          return (
-            <Cell key={cellIndex} cellAttrib={makeCellAttrib(x, y, cellStyle)}/>
-          )
-        })
-      }
+      {makeBoardSvg(cellStyle)}
     </svg>
   </svg>
   </div>
