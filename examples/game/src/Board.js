@@ -1,4 +1,5 @@
 import React from 'react';
+import { computed } from "mobx";
 import { observer } from "mobx-react";
 import _ from 'lodash';
 
@@ -8,14 +9,26 @@ import {makeCellAttrib, Cell} from './Cell';
 import {ManaMeter, manaMeterWidth} from './ManaMeter';
 import {towerAttribs, Tower} from './Tower';
 
+const makeBoard = f =>
+  _.range(nbCellH * nbCellV).map(cellIndex => {
+    const row = Math.floor(cellIndex / nbCellH);
+    const col = cellIndex % nbCellH;
+    return f(col, row, cellIndex);
+  });
+
+let influenceMap = computed(() =>
+  makeBoard((col, row) => (
+    (
+      Math.abs(row - towerAttribs.row) <= towerAttribs.influenceDist &&
+      Math.abs(col - towerAttribs.col) <= towerAttribs.influenceDist
+    ) ? 1 : 0
+  ))
+);
+
 const makeBoardSvg = (cellStyle) => (
-  _(_.range(nbCellH * nbCellV).map(cellIndex => {
-    const y = Math.floor(cellIndex / nbCellH);
-    const x = cellIndex % nbCellH;
-    return (
-      <Cell key={cellIndex} cellAttrib={makeCellAttrib(x, y, cellStyle)}/>
-    )
-  }))
+  _(makeBoard((col, row, cellIndex) => 
+    <Cell key={cellIndex} cellAttrib={makeCellAttrib(col, row, cellStyle, influenceMap.get()[cellIndex])}/>
+  ))
   .concat(
     <Tower key="baseTower" attribs={towerAttribs}/>
   )

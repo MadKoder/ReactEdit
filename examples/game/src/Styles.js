@@ -2,11 +2,15 @@ import { observable } from 'mobx';
 
 export const cellStyle = observable({
   stroke: '#BA0B0B',
-  fill : '#970808'
+  fill : 'Wheat'
 });
 
 export const hoveredCellStyle = observable(Object.assign({}, cellStyle, {
   fill : "#018D8D"
+}));
+
+export const influencedCellStyle = observable(Object.assign({}, cellStyle, {
+  fill : "#970808"
 }));
 
 export const textStyle={

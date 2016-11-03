@@ -1,24 +1,37 @@
 import React from 'react';
-import { observable } from 'mobx';
+import { observable, action } from 'mobx';
 import { observer } from "mobx-react";
 
-import {towerStyle } from './Styles';
+import {towerStyle} from './Styles';
+import {hoveredCellId} from './Events';
 import {nbCellH, cellWidth, cellHeight} from './Constants';
-import {handleMouseOver} from './Events'
+import {makeCellId} from './Tools';
 
-export const towerAttribs = observable({
-  x : nbCellH / 2,
-  y : 15,
-  style : towerStyle
+export let towerAttribs = observable({
+  col : nbCellH / 2,
+  row : 15,
+  style : towerStyle,
+  influenceDist : 3
 });
+
+const makeHandleMouse = (col, row) =>
+  action(e => {
+    if(e.type == "mouseover") {
+      hoveredCellId.set(makeCellId(col, row));
+    } else {
+      hoveredCellId.set(-1);
+    }
+    return true;
+  });
 
 export const Tower = observer(({attribs}) => 
   <circle 
     id="baseTower"
     style={attribs.style} 
-    cx={(attribs.x * cellWidth) - (cellWidth / 2)}
-    cy={(attribs.y * cellHeight) + (cellHeight / 2)}
+    cx={(attribs.col * cellWidth) + (cellWidth / 2)}
+    cy={(attribs.row * cellHeight) + (cellHeight / 2)}
     r={cellWidth / 3}
-    onMouseOver={handleMouseOver} onMouseOut={handleMouseOver}
+    onMouseOver={makeHandleMouse(attribs.col, attribs.row)}
+    onMouseOut={makeHandleMouse(attribs.col, attribs.row)}
   />
 );
