@@ -1,10 +1,10 @@
-import mainRender from './Main';
+import mainRender from './components/Main';
 
 mainRender();
 
 if (module.hot) {
-  module.hot.accept('./Main', () => {
-    const nextMainRender = require('./Main').default;
+  module.hot.accept('./components/Main', () => {
+    const nextMainRender = require('./components/Main').default;
 
     nextMainRender();
   });
