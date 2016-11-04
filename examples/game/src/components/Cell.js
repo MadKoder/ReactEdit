@@ -1,15 +1,18 @@
 import React from 'react';
+import { action } from 'mobx';
 import { observer } from "mobx-react";
 
+import {towers, makeTower} from '../state/Board';
+import {onMouseOver, onMouseOut, onMouseClick, hoveredCellId} from '../common/Actions';
+import {makeCellId} from '../common/Tools';
 import {cellStyle, hoveredCellStyle, influencedCellStyle} from './Styles';
 import {cellWidth, cellHeight} from './Constants';
-import {hoveredCellId, handleMouseOver} from './Events';
-import {makeCellId} from './Tools';
 
 export const makeCellAttrib = (col, row, style, influence) => ({
   id : makeCellId(col, row),
   col,
   row,
+  influence,
   style : (
     makeCellId(col, row) == hoveredCellId.get() ?
     hoveredCellStyle : 
@@ -21,9 +24,23 @@ export const makeCellAttrib = (col, row, style, influence) => ({
   )
 });
 
-export const Cell = observer(({cellAttrib}) => 
-  <rect id={"cell-" + cellAttrib.id.toString()} className="cell" style={cellAttrib.style} 
-    x={cellAttrib.col * cellWidth} y={cellAttrib.row * cellHeight} width={cellWidth} height={cellHeight}
-    onMouseOver={handleMouseOver} onMouseOut={handleMouseOver} cellX={cellAttrib.x} cellY={cellAttrib.y}
+const makeHandleMouse = (state) =>
+  action(e => {
+    if(e.type == "mouseover") {
+      onMouseOver(state.col, state.row);
+    } else if(e.type == "mouseout") {
+      onMouseOut(state.col, state.row);
+    } else {
+      onMouseClick(state.col, state.row);
+    }
+    return true;
+  });
+
+export const Cell = observer(({state}) => 
+  <rect id={"cell-" + state.id.toString()} className="cell" style={state.style} 
+    x={state.col * cellWidth} y={state.row * cellHeight} width={cellWidth} height={cellHeight}
+    onMouseOver={makeHandleMouse(state)}
+    onMouseOut={makeHandleMouse(state)}
+    onMouseDown={makeHandleMouse(state)}
   />
 );

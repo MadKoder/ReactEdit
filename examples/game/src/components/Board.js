@@ -3,41 +3,35 @@ import { computed } from "mobx";
 import { observer } from "mobx-react";
 import _ from 'lodash';
 
+import {boardWidth, boardHeight} from '../common/Constants';
+import {towers, baseTower, makeBoard, influenceMap} from '../state/Board';
 import {cellStyle} from './Styles';
-import {nbCellH, nbCellV, boardWidth, boardHeight} from './Constants';
+import {cellWidth, cellHeight, leftWidth} from './Constants';
 import {makeCellAttrib, Cell} from './Cell';
 import {ManaMeter, manaMeterWidth} from './ManaMeter';
-import {towerAttribs, Tower} from './Tower';
-
-const makeBoard = f =>
-  _.range(nbCellH * nbCellV).map(cellIndex => {
-    const row = Math.floor(cellIndex / nbCellH);
-    const col = cellIndex % nbCellH;
-    return f(col, row, cellIndex);
-  });
-
-let influenceMap = computed(() =>
-  makeBoard((col, row) => (
-    (
-      Math.abs(row - towerAttribs.row) <= towerAttribs.influenceDist &&
-      Math.abs(col - towerAttribs.col) <= towerAttribs.influenceDist
-    ) ? 1 : 0
-  ))
-);
+import {Tower} from './Tower';
 
 const makeBoardSvg = (cellStyle) => (
   _(makeBoard((col, row, cellIndex) => 
-    <Cell key={cellIndex} cellAttrib={makeCellAttrib(col, row, cellStyle, influenceMap.get()[cellIndex])}/>
+    <Cell key={cellIndex} state={makeCellAttrib(col, row, cellStyle, influenceMap.get()[cellIndex])}/>
   ))
   .concat(
-    <Tower key="baseTower" attribs={towerAttribs}/>
+    <Tower key="baseTower" state={baseTower}/>
+  )
+  .concat(
+    towers.map(tower =>
+      <Tower key={"tower-" + tower.id.toString()} state={tower}/>
+    )
   )
   .value()
 );
 
+const svgWidth = boardWidth * cellWidth + leftWidth;
+const svgHeight = boardHeight * cellHeight;
+
 export const Board = observer(({cellStyle}) => 
   <div>
-  <svg xmlns="http://www.w3.org/2000/svg"  y={0} width={boardWidth} height={boardHeight} viewBox={"0 0 " + boardWidth.toString() + " " + boardHeight.toString()}>
+  <svg xmlns="http://www.w3.org/2000/svg"  y={0} width={svgWidth} height={svgHeight} viewBox={"0 0 " + svgWidth.toString() + " " + svgHeight.toString()}>
     <ManaMeter mana={20} />
     <svg x={manaMeterWidth + 50}>
       {makeBoardSvg(cellStyle)}
