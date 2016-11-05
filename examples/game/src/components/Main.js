@@ -3,12 +3,12 @@ import { render } from 'react-dom';
 
 import '../style/main.css';
 import {cellStyle} from './Styles';
-import {Board} from './Board';
+import {Board, mousePos} from './Board';
 
 
 const mainRender = () => {
   render(
-    <Board cellStyle={cellStyle}>
+    <Board cellStyle={cellStyle} mousePos={mousePos}>
     </Board>,
     document.getElementById('root')
   );
