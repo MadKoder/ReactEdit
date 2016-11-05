@@ -6,6 +6,7 @@ import _ from 'lodash';
 import {onMouseOver, onMouseOut, onMouseClick} from '../common/Actions';
 import {boardWidth, boardHeight} from '../common/Constants';
 import {towers, baseTower, makeBoard, influenceMap} from '../state/Board';
+import {state} from '../state/State';
 import {cellStyle} from './Styles';
 import {cellWidth, cellHeight, leftWidth} from './Constants';
 import {makeCellAttrib, Cell} from './Cell';
@@ -66,7 +67,7 @@ const handleMouse = action(e => {
 export const Board = observer(({cellStyle, mousePos}) => 
   <div>
   <svg xmlns="http://www.w3.org/2000/svg"  y={0} width={svgWidth} height={svgHeight} viewBox={"0 0 " + svgWidth.toString() + " " + svgHeight.toString()}>
-    <ManaMeter mana={20} x={20} y={0}/>
+    <ManaMeter mana={state.mana} x={20} y={0}/>
     <svg 
       x={boardPos.x} 
       width={svgWidth}

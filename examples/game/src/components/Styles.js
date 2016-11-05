@@ -33,6 +33,10 @@ export const towerStyle = observable({
   fill : 'black'
 });
 
+export const baseTowerStyle = observable(Object.assign({}, towerStyle, {
+  fill : "DarkSlateBlue"
+}));
+
 export const manaMeterStyle = observable({
   stroke: 'black',
   strokeWidth: 0,

@@ -3,28 +3,14 @@ import _ from 'lodash';
 
 import {boardWidth, boardHeight} from '../common/Constants';
 
-let currentId = 1;
-export let towers = observable([
-  {
-    id : 0,
-    col : 12,
-    row : 5,
-    influenceDist : 1
-  }
-]);
+export let towers = observable([]);
 
 export let baseTower = observable({
   col : 8,
   row : 15,
-  influenceDist : 3
+  influenceDist : 3,
+  base : true
 });
-
-export const makeTower = (col, row) => ({
-  id : currentId++,
-  col,
-  row,
-  influenceDist : 1
-})
 
 export const makeBoard = f =>
   _.range(boardWidth * boardHeight).map(cellIndex => {
@@ -32,6 +18,8 @@ export const makeBoard = f =>
     const col = cellIndex % boardWidth;
     return f(col, row, cellIndex);
   });
+
+export let towersBoard = observable(makeBoard((col, row) => null));
 
 const influenceLevelOnCell = (cellCol, cellRow, tower) =>
   (
