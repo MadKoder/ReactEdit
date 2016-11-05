@@ -16,15 +16,24 @@ export const onMouseOut = action((col, row) => {
 
 export const onMouseClick = action((col, row) => {
   const cellId = makeCellId(col, row);
-  if(
-    (influenceMap.get()[cellId] > 0) &&
-    (towersBoard[cellId] == null) &&
-    (state.mana > 1)
-  ) {
-    let tower = makeTower(col, row);
-    towers.push(tower);
-    towersBoard[cellId] = tower;
-    state.mana -= 2;
+  let tower = towersBoard.get()[cellId]
+  if(tower == null) {
+    const manaCost = 9;
+    if(
+      (influenceMap.get()[cellId] > 0) &&
+      (state.mana >= manaCost)
+    ) {
+      towers.push(makeTower(col, row));
+      state.mana -= manaCost;
+    }
+  } else {
+    const influenceDist = tower.influenceDist;
+    const manaCost = (influenceDist + 1) * (influenceDist + 1);
+    if(state.mana >= manaCost)
+    {
+      tower.influenceDist += 1;
+      state.mana -= manaCost; 
+    }
   }
 });
 
