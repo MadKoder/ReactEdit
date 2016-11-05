@@ -29,23 +29,36 @@ module.exports = {
   },
   module: {
     loaders: [ {
-      test: /\.json$/,
-      loaders: ['json'],
-      include: path.join(__dirname, 'node_modules', 'escodegen')
-    }, {
-      test: /\.js$/,
-      loaders: ['react-hot', 'babel'],
-      exclude: /node_modules/,
-      include: path.join(__dirname, 'src')
-    }, {
-      test: /\.css?$/,
-      loaders: ['style', 'css'],
-      exclude: /node_modules/,
-      include: path.join(__dirname, 'src')
-    }, {
-      test: /\.scss$/,
-      loaders: ["style", "css", "sass"],
-      include: path.join(__dirname, 'src')
-    }
-  ] }
+        test: /\.json$/,
+        loaders: ['json'],
+        include: path.join(__dirname, 'node_modules', 'escodegen')
+      }, {
+        test: /\.js$/,
+        loaders: ['react-hot', 'babel'],
+        exclude: /node_modules/,
+        include: path.join(__dirname, 'src')
+      }, {
+        test: /\.css?$/,
+        loaders: ['style', 'css'],
+        exclude: /node_modules/,
+        include: path.join(__dirname, 'src')
+      }, {
+        test: /\.scss$/,
+        loaders: ["style", "css", "sass"],
+        include: path.join(__dirname, 'src')
+      },
+      // {
+      //   test: /\.svg?$/,
+      //   loader: 'svg-sprite!svgo',
+      //   include: path.resolve('src/svg')
+      // }
+      {
+        test: /\.(jpe?g|png|gif|svg)$/i,
+        loaders: [
+            'file?hash=sha512&digest=hex&name=[hash].[ext]',
+            'image-webpack?bypassOnDebug&optimizationLevel=7&interlaced=false'
+        ]
+      }
+    ]
+  }
 };

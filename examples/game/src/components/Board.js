@@ -7,7 +7,7 @@ import {onMouseOver, onMouseOut, onMouseClick} from '../common/Actions';
 import {boardWidth, boardHeight} from '../common/Constants';
 import {towers, baseTower, makeBoard, influenceMap} from '../state/Board';
 import {state} from '../state/State';
-import {cellStyle} from './Styles';
+import {cellStyle, styles} from './Styles';
 import {cellWidth, cellHeight, leftWidth} from './Constants';
 import {makeCellAttrib, Cell} from './Cell';
 import {NumberDisplay} from './NumberDisplay';
@@ -19,11 +19,11 @@ const makeBoardSvg = (cellStyle) => (
     <Cell key={cellIndex} state={makeCellAttrib(col, row, cellStyle, influenceMap.get()[cellIndex])}/>
   ))
   .concat(
-    <Tower key="baseTower" state={baseTower}/>
+    <Tower key="baseTower" state={baseTower} styles={styles}/>
   )
   .concat(
     towers.map(tower =>
-      <Tower key={"tower-" + tower.id.toString()} state={tower}/>
+      <Tower key={"tower-" + tower.id.toString()} state={tower} styles={styles}/>
     )
   )
   .value()
@@ -47,8 +47,11 @@ const boardPos = {
 
 const handleMouse = action(e => {
   // Clip at width/height - 1
-  const x = _.clamp(e.pageX - boardPos.x, 0, boardSvgWidth - 1); 
-  const y = _.clamp(e.pageY - boardPos.y, 0, boardSvgHeight - 1);
+  let br = e.currentTarget.getBoundingClientRect();
+  const x = _.clamp(e.pageX - br.left, 0, boardSvgWidth - 1); 
+  const y = _.clamp(e.pageY - br.top, 0, boardSvgHeight - 1);
+  // const x = _.clamp(e.pageX - boardPos.x, 0, boardSvgWidth - 1); 
+  // const y = _.clamp(e.pageY - boardPos.y, 0, boardSvgHeight - 1);
   const col = Math.floor(x / cellWidth);
   const row = Math.floor(y / cellHeight);
   mousePos.x = x;
@@ -63,9 +66,19 @@ const handleMouse = action(e => {
   }
 });
 
+let iconNames = ["arrow"]
+let icons = _.zipObject(
+  iconNames,
+  iconNames.map(name =>
+    require('../svg/' + name + '.svg')
+  )
+);
+
+const boardRight = boardWidth * cellWidth + leftWidth;
 
 export const Board = observer(({cellStyle, mousePos}) => 
   <div>
+  {/*<img src={logo} />*/}
   <svg xmlns="http://www.w3.org/2000/svg"  y={0} width={svgWidth} height={svgHeight} viewBox={"0 0 " + svgWidth.toString() + " " + svgHeight.toString()}>
     <ManaMeter mana={state.mana} x={20} y={0}/>
     <svg 
@@ -79,8 +92,24 @@ export const Board = observer(({cellStyle, mousePos}) =>
     >
       {makeBoardSvg(cellStyle)}
     </svg>
-    <NumberDisplay x={boardWidth * cellWidth + leftWidth} number={mousePos.x}/>
-    <NumberDisplay x={boardWidth * cellWidth + leftWidth} y={20} number={mousePos.y}/>
+    <NumberDisplay x={boardRight} number={mousePos.x}/>
+    <NumberDisplay x={boardRight} y={20} number={mousePos.y}/>
+    <image x={boardRight} y="200" width="60" height="60" href={icons.arrow}/>
   </svg>
   </div>
+);
+
+let towerStrokeWidthIncrement = .2;
+
+setInterval(
+  () => {
+    let strokeWidth = styles.tower.strokeWidth + towerStrokeWidthIncrement;
+    if(strokeWidth > 4) {
+      towerStrokeWidthIncrement = -.2;
+    } else if(strokeWidth < 1) {
+      towerStrokeWidthIncrement = .2;
+    }
+    styles.tower.strokeWidth = strokeWidth;    
+  },
+  50
 );

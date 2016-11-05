@@ -1,49 +1,55 @@
-import { observable } from 'mobx';
+import { observable, computed } from 'mobx';
 
-export const cellStyle = observable({
+export let cellStyle = observable({
   stroke: '#BA0B0B',
   fill : 'Wheat'
 });
 
-export const hoveredCellStyle = observable(Object.assign({}, cellStyle, {
+export let hoveredCellStyle = observable(Object.assign({}, cellStyle, {
   fill : "#018D8D"
 }));
 
-export const influencedCellStyle = observable(Object.assign({}, cellStyle, {
+export let influencedCellStyle = observable(Object.assign({}, cellStyle, {
   fill : "#970808"
 }));
 
-export const textStyle={
+export let textStyle={
   fill : "white"
 };
 
-export const innerSvgStyle = {
+export let innerSvgStyle = {
   overflow : "hidden",
   fill : "black",
   background : "black"
 };
 
-export const textBoundingRectStyle = {
+export let textBoundingRectStyle = {
   stroke : "black",
   fill : "none"
 };
 
-export const towerStyle = observable({
+export let tower = observable({
+  strokeWidth : 1,
   stroke: 'mediumspringgreen',
   fill : 'black'
 });
 
-export const baseTowerStyle = observable(Object.assign({}, towerStyle, {
+export let baseTower = computed(() => Object.assign({}, tower, {
   fill : "DarkSlateBlue"
 }));
 
-export const manaMeterStyle = observable({
+export let manaMeterStyle = observable({
   stroke: 'black',
   strokeWidth: 0,
   fill : '#3E0000'
 });
 
-export const filledManaMeterStyle = observable(Object.assign({}, manaMeterStyle, {
+export let filledManaMeterStyle = observable(Object.assign({}, manaMeterStyle, {
   // stroke: '#BA0B0B',
   fill : "#92DB01"
 }));
+
+export let styles = observable({
+  tower,
+  baseTower
+});
