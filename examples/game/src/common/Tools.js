@@ -1,10 +1,10 @@
 import { observable } from 'mobx';
 
-import {boardWidth} from './Constants';
+import {boardWidth, boardHeight} from './Constants';
 
 export const makeCellId = (x, y) => x + (y * boardWidth);
 
-let currentTowerId = 0;
+let currentTowerId = 1;
 
 export const makeTower = (col, row, influenceDist=1, base=false) => {
   const id = currentTowerId;
@@ -16,4 +16,27 @@ export const makeTower = (col, row, influenceDist=1, base=false) => {
     influenceDist,
     base
   });
+};
+
+export const vec = (x, y) => ({
+  x,
+  y
+});
+
+export const makeMap = f =>
+  _.range(boardWidth * boardHeight).map(cellIndex => {
+    const row = Math.floor(cellIndex / boardWidth);
+    const col = cellIndex % boardWidth;
+    return f(col, row, cellIndex);
+  });
+
+// Makes a map of board dimension from a list of elements
+// Each element must have row and col attributes
+// Each item in the output map is filled with null if no elements
+export const makeMapFromList = (list) => {
+  let board = _.range(boardWidth * boardHeight).map(() => null);
+  _.forEach(list, element => {
+    board[makeCellId(element.col, element.row)] = element;
+  });
+  return board;
 };

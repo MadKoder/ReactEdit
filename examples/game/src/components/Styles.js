@@ -2,7 +2,7 @@ import { observable, computed } from 'mobx';
 
 export let cellStyle = observable({
   stroke: '#BA0B0B',
-  fill : 'Wheat'
+  fill : 'RoyalBlue'
 });
 
 export let hoveredCellStyle = observable(Object.assign({}, cellStyle, {
@@ -49,12 +49,19 @@ export let filledManaMeterStyle = observable(Object.assign({}, manaMeterStyle, {
   fill : "#92DB01"
 }));
 
+export let manaSourceStyle = observable({
+  stroke: 'Gold',
+  fill : 'none',
+  strokeWidth : 1
+});
+
 export let styles = observable({
   tower,
   baseTower,
   cellStyle,
   influencedCellStyle,
-  hoveredCellStyle
+  hoveredCellStyle,
+  manaSourceStyle
 });
 
 export default styles;

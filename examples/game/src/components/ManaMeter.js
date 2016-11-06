@@ -7,7 +7,6 @@ import { NumberDisplay } from './NumberDisplay';
 const manaMeterHeight = 100;
 export const manaMeterWidth = 50;
 const maxMana = 100;
-const manaIncrement = 10;
 
 export const ManaMeter = observer(({state, ...props}) => {
   const mana = state.mana;

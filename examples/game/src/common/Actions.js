@@ -1,6 +1,7 @@
 import { observable, action } from 'mobx';
 
-import {towers, influenceMap, towersBoard} from '../state/Board';
+import {influenceMap} from '../state/Board';
+import * as towers from '../state/towers';
 import {state} from '../state/State';
 import {makeCellId, makeTower} from './Tools';
 
@@ -16,14 +17,14 @@ export const onMouseOut = action((col, row) => {
 
 export const onMouseClick = action((col, row) => {
   const cellId = makeCellId(col, row);
-  let tower = towersBoard.get()[cellId]
+  let tower = towers.towersBoard.get()[cellId]
   if(tower == null) {
     const manaCost = 9;
     if(
       (influenceMap.get()[cellId] > 0) &&
       (state.mana >= manaCost)
     ) {
-      towers.push(makeTower(col, row));
+      towers.towers.push(makeTower(col, row));
       state.mana -= manaCost;
     }
   } else {
@@ -38,7 +39,7 @@ export const onMouseClick = action((col, row) => {
 });
 
 export const nextTurn = action(() => {
-  state.mana += 10;
+  state.mana += state.manaIncrement;
 });
 
 onMouseClick(10, 12);
