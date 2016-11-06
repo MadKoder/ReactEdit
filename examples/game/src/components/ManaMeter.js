@@ -7,8 +7,10 @@ import { NumberDisplay } from './NumberDisplay';
 const manaMeterHeight = 100;
 export const manaMeterWidth = 50;
 const maxMana = 100;
+const manaIncrement = 10;
 
-export const ManaMeter = observer(({mana, ...props}) => {
+export const ManaMeter = observer(({state, ...props}) => {
+  const mana = state.mana;
   const filledHeight = manaMeterHeight * (mana / maxMana);
   return (
     <svg {...props}>
@@ -18,7 +20,8 @@ export const ManaMeter = observer(({mana, ...props}) => {
       <rect 
         y={manaMeterHeight - filledHeight} width={manaMeterWidth} height={filledHeight} style={filledManaMeterStyle}
       />
-      <NumberDisplay number={mana} y={manaMeterHeight + 20} width={manaMeterWidth} />
+      <NumberDisplay number={state.mana} y={manaMeterHeight + 20} width={manaMeterWidth} />
+      <NumberDisplay number={"+" + state.manaIncrement} y={manaMeterHeight + 40} width={manaMeterWidth} />
     </svg>
   );
 });

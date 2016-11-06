@@ -51,5 +51,10 @@ export let filledManaMeterStyle = observable(Object.assign({}, manaMeterStyle, {
 
 export let styles = observable({
   tower,
-  baseTower
+  baseTower,
+  cellStyle,
+  influencedCellStyle,
+  hoveredCellStyle
 });
+
+export default styles;

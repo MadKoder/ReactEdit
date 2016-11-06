@@ -37,4 +37,8 @@ export const onMouseClick = action((col, row) => {
   }
 });
 
+export const nextTurn = action(() => {
+  state.mana += 10;
+});
+
 onMouseClick(10, 12);

@@ -3,28 +3,28 @@ import { action } from 'mobx';
 import { observer } from "mobx-react";
 
 import {hoveredCellId} from '../common/Actions';
-import {makeCellId} from '../common/Tools';
-import {cellStyle, hoveredCellStyle, influencedCellStyle} from './Styles';
+import {influenceMap} from '../state/Board';
 import {cellWidth, cellHeight} from './Constants';
 
-export const makeCellAttrib = (col, row, style, influence) => ({
-  id : makeCellId(col, row),
-  col,
-  row,
-  influence,
-  style : (
-    makeCellId(col, row) == hoveredCellId.get() ?
-    hoveredCellStyle : 
+const makeStyle = (state, styles) => {
+  const influence = influenceMap.get()[state.id];
+  return state.id == hoveredCellId.get() ?
+    styles.hoveredCellStyle : 
     (
       influence > 0 ? 
-      influencedCellStyle :
-      cellStyle
+      styles.influencedCellStyle :
+      styles.cellStyle
     )
-  )
-});
+};
 
-export const Cell = observer(({state}) => 
-  <rect id={"cell-" + state.id.toString()} className="cell" style={state.style} 
-    x={state.col * cellWidth} y={state.row * cellHeight} width={cellWidth} height={cellHeight}
+export const Cell = observer(({state, styles}) => 
+  <rect 
+    id={"cell-" + state.id.toString()}
+    className="cell" 
+    style={makeStyle(state, styles)}
+    x={state.col * cellWidth}
+    y={state.row * cellHeight}
+    width={cellWidth}
+    height={cellHeight}
   />
 );
