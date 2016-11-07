@@ -20,6 +20,7 @@ const makeManaIncrement = () => (
 
 export let state = observable({
   mana : 60,
+  maxMana : 200,
   get towers() {return towers.towers;},
   get manaIncrement() {return makeManaIncrement();},
   get manaSources() {return manaSources.manaSources;},

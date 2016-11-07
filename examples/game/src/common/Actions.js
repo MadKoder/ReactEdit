@@ -39,7 +39,8 @@ export const onMouseClick = action((col, row) => {
 });
 
 export const nextTurn = action(() => {
-  state.mana += state.manaIncrement;
+  let mana = state.mana + state.manaIncrement;
+  state.mana = Math.min(mana, state.maxMana);
 });
 
 onMouseClick(10, 12);

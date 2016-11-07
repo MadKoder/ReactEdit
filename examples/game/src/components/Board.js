@@ -1,5 +1,5 @@
 import React from 'react';
-import { computed, observable, action } from "mobx";
+import { computed, observable, action, transaction } from "mobx";
 import { observer } from "mobx-react";
 import _ from 'lodash';
 
@@ -100,20 +100,54 @@ export const Board = observer(({cellStyle, mousePos}) =>
   </div>
 );
 
-let towerStrokeWidthIncrement = .2;
+let towerStrokeWidthIncrement = 10.;
 
-setInterval(
-  () => {
-    let strokeWidth = styles.tower.strokeWidth + towerStrokeWidthIncrement;
-    if(strokeWidth > 4) {
-      towerStrokeWidthIncrement = -.2;
-    } else if(strokeWidth < 1) {
-      towerStrokeWidthIncrement = .2;
-    }
+let strokeWidth = styles.tower.strokeWidth
+function update(dt) {
+  strokeWidth = strokeWidth + towerStrokeWidthIncrement * dt;
+  if((strokeWidth > 4) || (strokeWidth < 1)) {
+    towerStrokeWidthIncrement = -towerStrokeWidthIncrement;
+  }
+}
+
+const render = (dt) => {
+  transaction(() => {
     styles.tower.strokeWidth = strokeWidth;
     styles.manaSourceStyle = Object.assign({}, styles.manaSourceStyle, {
       strokeWidth
     });
-  },
-  50
-);
+  });
+};
+
+function timestamp() {
+  return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
+}
+
+// Game loop from http://codeincomplete.com/posts/javascript-game-foundations-the-game-loop/
+// This game loop implements fixed steps for updates, which is cool
+// And render rest of the time ...
+let
+  now,
+  dt = 0,
+  last = timestamp(),
+  step = 1/60;
+
+function frame() {
+  now   = timestamp();
+  // dt = dt + Math.min(1, (now - last) / 1000);
+  dt = dt + Math.min(1, (now - last) / 1000);
+  let updated = false;
+  while(dt > step) {
+    dt = dt - step;
+    update(step);
+    updated = true;
+  }
+  // Maybe we would want to only render when update ?
+  if(updated) {
+    render(dt);
+  }
+  last = now;
+  requestAnimationFrame(frame); // request the next frame
+}
+
+requestAnimationFrame(frame); // start the first frame

@@ -6,11 +6,10 @@ import { NumberDisplay } from './NumberDisplay';
 
 const manaMeterHeight = 100;
 export const manaMeterWidth = 50;
-const maxMana = 100;
 
 export const ManaMeter = observer(({state, ...props}) => {
   const mana = state.mana;
-  const filledHeight = manaMeterHeight * (mana / maxMana);
+  const filledHeight = manaMeterHeight * (mana / state.maxMana);
   return (
     <svg {...props}>
       <rect 
