@@ -7,21 +7,10 @@ import {hoveredCellId} from '../common/Actions';
 import {influenceMap} from '../state/Board';
 import {cellWidth, cellHeight} from './Constants';
 
-const makeStyle = (state, styles) => {
-  const influence = state.influence;
-  return state.id == hoveredCellId.get() ?
-    styles.hoveredCellStyle : 
-    (
-      influence > 0 ? 
-      styles.influencedCellStyle :
-      styles.cellStyle
-    )
-};
-
-export const Cell = observer(({state, styles}) =>
+export const Cell = observer(({state, styles, style}) =>
   <g id={"cell-" + state.id.toString()} className="cell" >
     <rect 
-      style={makeStyle(state, styles)}
+      style={style}
       x={state.col * cellWidth}
       y={state.row * cellHeight}
       width={cellWidth}

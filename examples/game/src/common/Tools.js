@@ -40,3 +40,6 @@ export const makeMapFromList = (list) => {
   });
   return board;
 };
+
+export const rgb = (r, g, b) =>
+  '#' + (0x1000000 + (r * 0x10000) + (g * 0x100) + b).toString(16).slice(1);

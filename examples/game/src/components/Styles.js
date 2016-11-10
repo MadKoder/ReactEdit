@@ -2,7 +2,7 @@ import { observable, computed } from 'mobx';
 
 export let cellStyle = observable({
   stroke: '#BA0B0B',
-  fill : 'RoyalBlue'
+  fill : '#4169E1' // Royal blue
 });
 
 export let hoveredCellStyle = observable(Object.assign({}, cellStyle, {

@@ -1,11 +1,11 @@
 import React from 'react';
-import { computed, observable, action, transaction } from "mobx";
+import { computed, observable, action, transaction, reaction } from "mobx";
 import { observer } from "mobx-react";
 import _ from 'lodash';
 
 import * as actions from '../common/Actions';
 import {boardWidth, boardHeight} from '../common/Constants';
-import {makeCellId, vec, makeMap} from '../common/Tools';
+import {makeCellId, vec, makeMap, rgb} from '../common/Tools';
 import {towers} from '../state/towers';
 import {state} from '../state/State';
 import {cellStyle, styles} from './Styles';
@@ -16,12 +16,77 @@ import {ManaMeter, manaMeterWidth} from './ManaMeter';
 import {Tower} from './Tower';
 import HGroup from './HGroup';
 
+const makeCellStyle = (state, styles) => {
+  const influence = state.influence;
+  return state.id == actions.hoveredCellId.get() ?
+    styles.hoveredCellStyle : 
+    (
+      influence > 0 ? 
+      styles.influencedCellStyle :
+      styles.cellStyle
+    )
+};
+
+let cellStyles = observable(makeMap((col, row, cellIndex) => 
+  styles.cellStyle
+));
+
+let previousHoveredCellId = -1;
+
+let animations = {};
+let animationsToRemove = [];
+let animationNumber = 0;
+const parseColor = (str) => 
+  [
+    parseInt(str.substr(1,2),16),
+    parseInt(str.substr(3,2),16),
+    parseInt(str.substr(5,2),16)
+  ];
+
+const interpolate = (fromVal, toVal, dtSum, duration) => 
+  fromVal + ((toVal - fromVal) * dtSum / duration);
+
+let hoveredCellReaction = reaction(
+  () => actions.hoveredCellId.get(),
+  hoveredCellId => {
+    if(previousHoveredCellId != -1) {
+      // const key = animationNumber.toString();
+      let cellId = previousHoveredCellId;
+      const key = cellId.toString();
+      // let fromColor = parseColor(cellStyles[cellId].fill);
+      let fromColor = parseColor(styles.hoveredCellStyle.fill);
+      let toColor = parseColor(styles.cellStyle.fill);
+      let duration = 1;
+      let dtSum = 0;
+      animations[key] = (dt) => {
+        dtSum = Math.min(dtSum + dt, duration);
+        const r = Math.floor(interpolate(fromColor[0], toColor[0], dtSum, duration));
+        const g = Math.floor(interpolate(fromColor[1], toColor[1], dtSum, duration));
+        const b = Math.floor(interpolate(fromColor[2], toColor[2], dtSum, duration));
+        cellStyles[cellId] = Object.assign({}, cellStyles[cellId], {
+          fill : rgb(r, g, b)
+        });
+        if(dtSum >= duration) {
+          animationsToRemove.push(key);
+        }
+      };
+      animationNumber++;
+    }
+    if(hoveredCellId != -1) {
+      cellStyles[hoveredCellId] = styles.hoveredCellStyle;
+    }
+    previousHoveredCellId = hoveredCellId;
+  }
+);
+
+
 const makeBoardSvg = (cellStyle) => (
   _(makeMap((col, row, cellIndex) => 
     <Cell
       key={cellIndex}
       state={state.board.get()[makeCellId(col, row)]}
       styles={styles}
+      style={cellStyles[makeCellId(col, row)]}
     />
   ))
   .concat(
@@ -116,6 +181,9 @@ const render = (dt) => {
     styles.manaSourceStyle = Object.assign({}, styles.manaSourceStyle, {
       strokeWidth
     });
+    _.each(animations, (animation) => {animation(dt);});
+    _.each(animationsToRemove, (key) => {delete animations[key];});
+    animationsToRemove.length = 0;
   });
 };
 
@@ -142,7 +210,7 @@ function frame() {
     update(step);
     updated = true;
   }
-  // Maybe we would want to only render when update ?
+  // Maybe we would want to only render when updated ?
   if(updated) {
     render(dt);
   }

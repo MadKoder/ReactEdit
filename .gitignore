@@ -52,3 +52,4 @@ bundle.js
 *.sublime-workspace
 *.sublime-project
 examples/react/npm-debug.log
+examples/game/npm-debug.log
