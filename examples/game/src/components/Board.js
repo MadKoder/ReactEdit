@@ -41,31 +41,11 @@ let previousHoveredCellId = -1;
 let animations = {};
 let animationsToRemove = [];
 
-const animateArrayItemFromTo = (key, array, id, duration, fromVal, toVal) => {
-  let interpolator;
-  if((typeof fromVal === "function") || (typeof toVal === "function")) {
-    let fromValFunc = typeof fromVal === "function" ? fromVal : () => fromVal;
-    let toValFunc = typeof toVal === "function" ? toVal : () => toVal;
-    interpolator = dt => d3.interpolate(fromValFunc(), toValFunc())(dt);
-  } else {
-    interpolator = d3.interpolate(fromVal, toVal);
-  }
-  let dtSum = 0;
+const setTransition = (key, transitionStep) => {
   animations[key] = (dt) => {
-    dtSum = Math.min(dtSum + dt, duration);
-    let interpolatedVal = interpolator(dtSum/duration);
-    array[id] = Object.assign({}, array[id], interpolatedVal);
-    if(dtSum >= duration) {
-      animationsToRemove.push(key);
-    }
-  }
-};
-
-const setAnimation = (key, animation) => {
-  animations[key] = (dt) => {
-    if(!animation.animate(dt)) {
-      if(animation.next !== null) {
-        setAnimation(key, animation.next);
+    if(!transitionStep.animate(dt)) {
+      if(transitionStep.next !== null) {
+        setTransition(key, transitionStep.next);
       } else {
         animationsToRemove.push(key);
       }
@@ -73,42 +53,70 @@ const setAnimation = (key, animation) => {
   };
 };
 
-const animateArrayItem = (key, array, id, previous=null) => {
-  let animation = {
+const makeArrayItemTransitionFunction = (array, id, duration, interpolator) => {
+  let dtSum = 0;
+  return dt => {
+    dtSum = Math.min(dtSum + dt, duration);
+    let interpolatedVal = interpolator(dtSum/duration);
+    if(interpolatedVal === null) {
+      array[id] = null;
+    } else {
+      array[id] = Object.assign({}, array[id], interpolatedVal);
+    }
+    return (dtSum < duration);
+  }
+};
+
+const makeInterpolator = (fromVal, toVal) => {
+  if((typeof fromVal === "function") || (typeof toVal === "function")) {
+    let fromValFunc = typeof fromVal === "function" ? fromVal : () => fromVal;
+    let toValFunc = typeof toVal === "function" ? toVal : () => toVal;
+    return dt => d3.interpolate(fromValFunc(), toValFunc())(dt);
+  } else {
+    return d3.interpolate(fromVal, toVal);
+  }    
+};
+
+const addArrayItemTransitionStep = (array, id, duration, fromVal, toVal, transitionStep) => {
+  const interpolator = makeInterpolator(fromVal, toVal);
+  transitionStep.animate = makeArrayItemTransitionFunction(array, id, duration, interpolator);
+  return addArrayItemTransition(null, array, id, transitionStep);
+};
+
+const makeArrayItemTransition = (array, id, transitionStep) =>({
+  fromTo : (duration, fromVal, toVal) => {
+    return addArrayItemTransitionStep(array, id, duration, fromVal, toVal, transitionStep);
+  },
+  to : (duration, toVal) => {
+    // This function will memoize initial value first time it is called, i.e. at the start
+    // of the transition using it
+    let fromValMemoized = false;
+    let memoizedFromVal = null;
+    const fromVal = () => {
+      if(!fromValMemoized) {
+        memoizedFromVal = array[id];
+        fromValMemoized = true;
+      }
+      return memoizedFromVal;
+    };
+    return addArrayItemTransitionStep(array, id, duration, fromVal, toVal, transitionStep);
+  }
+});
+
+const addArrayItemTransition = (key, array, id, previous=null) => {
+  // The step will be filled
+  let transitionStep = {
     animate : () => false,
     next : null
   };
 
   if(previous === null) {
-    setAnimation(key, animation);
+    setTransition(key, transitionStep);
   } else {
-    previous.next = animation;
+    previous.next = transitionStep;
   }
 
-  return {
-    fromTo : (duration, fromVal, toVal) => {
-      let interpolator;
-      if((typeof fromVal === "function") || (typeof toVal === "function")) {
-        let fromValFunc = typeof fromVal === "function" ? fromVal : () => fromVal;
-        let toValFunc = typeof toVal === "function" ? toVal : () => toVal;
-        interpolator = dt => d3.interpolate(fromValFunc(), toValFunc())(dt);
-      } else {
-        interpolator = d3.interpolate(fromVal, toVal);
-      }
-      let dtSum = 0;
-      animation.animate = (dt) => {
-        dtSum = Math.min(dtSum + dt, duration);
-        let interpolatedVal = interpolator(dtSum/duration);
-        if(interpolatedVal === null) {
-          array[id] = null;
-        } else {
-          array[id] = Object.assign({}, array[id], interpolatedVal);
-        }
-        return (dtSum < duration);
-      }
-      return animateArrayItem(key, array, id, animation);
-    }
-  };
+  return makeArrayItemTransition(array, id, transitionStep);
 };
 
 let hoveredCellReaction = reaction(
@@ -118,24 +126,31 @@ let hoveredCellReaction = reaction(
       const key = previousHoveredCellId.toString();
       let index = previousHoveredCellId;
       let duration = 2;
-      animateArrayItem(
+      addArrayItemTransition(
         key,
         hoveringCellStyles,
         previousHoveredCellId
-      ).fromTo(
+      ).to(
         duration,
-        styles.hoveredCellStyle,
         () => baseCellStyles.get()[index]
-      ).fromTo(
+      ).to(
         0.1,
-        () => baseCellStyles.get()[index],
         null
       );
+      // ).fromTo(
+      //   duration,
+      //   styles.hoveredCellStyle,
+      //   () => baseCellStyles.get()[index]
+      // ).fromTo(
+      //   0.1,
+      //   () => baseCellStyles.get()[index],
+      //   null
+      // );
     }
     if(hoveredCellId != -1) {
       const key = hoveredCellId.toString();
-      let duration = 1;
-      animateArrayItem(
+      let duration = 2;
+      addArrayItemTransition(
         key,
         hoveringCellStyles,
         hoveredCellId
