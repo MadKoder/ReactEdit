@@ -61,32 +61,87 @@ const animateArrayItemFromTo = (key, array, id, duration, fromVal, toVal) => {
   }
 };
 
+const setAnimation = (key, animation) => {
+  animations[key] = (dt) => {
+    if(!animation.animate(dt)) {
+      if(animation.next !== null) {
+        setAnimation(key, animation.next);
+      } else {
+        animationsToRemove.push(key);
+      }
+    }
+  };
+};
+
+const animateArrayItem = (key, array, id, previous=null) => {
+  let animation = {
+    animate : () => false,
+    next : null
+  };
+
+  if(previous === null) {
+    setAnimation(key, animation);
+  } else {
+    previous.next = animation;
+  }
+
+  return {
+    fromTo : (duration, fromVal, toVal) => {
+      let interpolator;
+      if((typeof fromVal === "function") || (typeof toVal === "function")) {
+        let fromValFunc = typeof fromVal === "function" ? fromVal : () => fromVal;
+        let toValFunc = typeof toVal === "function" ? toVal : () => toVal;
+        interpolator = dt => d3.interpolate(fromValFunc(), toValFunc())(dt);
+      } else {
+        interpolator = d3.interpolate(fromVal, toVal);
+      }
+      let dtSum = 0;
+      animation.animate = (dt) => {
+        dtSum = Math.min(dtSum + dt, duration);
+        let interpolatedVal = interpolator(dtSum/duration);
+        if(interpolatedVal === null) {
+          array[id] = null;
+        } else {
+          array[id] = Object.assign({}, array[id], interpolatedVal);
+        }
+        return (dtSum < duration);
+      }
+      return animateArrayItem(key, array, id, animation);
+    }
+  };
+};
+
 let hoveredCellReaction = reaction(
   () => actions.hoveredCellId.get(),
   hoveredCellId => {
     if(previousHoveredCellId != -1) {
       const key = previousHoveredCellId.toString();
       let index = previousHoveredCellId;
-      let duration = 5;
-      animateArrayItemFromTo(
+      let duration = 2;
+      animateArrayItem(
         key,
         hoveringCellStyles,
-        previousHoveredCellId,
+        previousHoveredCellId
+      ).fromTo(
         duration,
         styles.hoveredCellStyle,
         () => baseCellStyles.get()[index]
+      ).fromTo(
+        0.1,
+        () => baseCellStyles.get()[index],
+        null
       );
     }
     if(hoveredCellId != -1) {
-      // cellStyles[hoveredCellId] = styles.hoveredCellStyle;
       const key = hoveredCellId.toString();
-      let duration = 10;
-      animateArrayItemFromTo(
+      let duration = 1;
+      animateArrayItem(
         key,
         hoveringCellStyles,
-        hoveredCellId,
+        hoveredCellId
+      ).fromTo(
         duration,
-        cellStyles[hoveredCellId],
+        cellStyles.get()[hoveredCellId],
         styles.hoveredCellStyle
       );
     }

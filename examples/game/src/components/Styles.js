@@ -6,7 +6,8 @@ export let cellStyle = observable({
 });
 
 export let hoveredCellStyle = observable(Object.assign({}, cellStyle, {
-  fill : "#018D8D"
+  // fill : "#018D8D"
+  fill : "lime"
 }));
 
 export let influencedCellStyle = observable(Object.assign({}, cellStyle, {
