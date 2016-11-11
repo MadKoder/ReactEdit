@@ -1,6 +1,7 @@
 import React from 'react';
 import { computed, observable, action, transaction, reaction } from "mobx";
 import { observer } from "mobx-react";
+import * as d3 from "d3-interpolate";
 import _ from 'lodash';
 
 import * as actions from '../common/Actions';
@@ -35,45 +36,47 @@ let previousHoveredCellId = -1;
 
 let animations = {};
 let animationsToRemove = [];
-let animationNumber = 0;
-const parseColor = (str) => 
-  [
-    parseInt(str.substr(1,2),16),
-    parseInt(str.substr(3,2),16),
-    parseInt(str.substr(5,2),16)
-  ];
 
-const interpolate = (fromVal, toVal, dtSum, duration) => 
-  fromVal + ((toVal - fromVal) * dtSum / duration);
+const animateArrayItemFromTo = (key, array, id, duration, fromVal, toVal) => {
+  let interpolator = d3.interpolate(fromVal, toVal);
+  let dtSum = 0;
+  animations[key] = (dt) => {
+    dtSum = Math.min(dtSum + dt, duration);
+    let interpolatedVal = interpolator(dtSum/duration);
+    array[id] = Object.assign({}, array[id], interpolatedVal);
+    if(dtSum >= duration) {
+      animationsToRemove.push(key);
+    }
+  }
+};
 
 let hoveredCellReaction = reaction(
   () => actions.hoveredCellId.get(),
   hoveredCellId => {
     if(previousHoveredCellId != -1) {
-      // const key = animationNumber.toString();
-      let cellId = previousHoveredCellId;
-      const key = cellId.toString();
-      // let fromColor = parseColor(cellStyles[cellId].fill);
-      let fromColor = parseColor(styles.hoveredCellStyle.fill);
-      let toColor = parseColor(styles.cellStyle.fill);
+      const key = previousHoveredCellId.toString();
       let duration = 1;
-      let dtSum = 0;
-      animations[key] = (dt) => {
-        dtSum = Math.min(dtSum + dt, duration);
-        const r = Math.floor(interpolate(fromColor[0], toColor[0], dtSum, duration));
-        const g = Math.floor(interpolate(fromColor[1], toColor[1], dtSum, duration));
-        const b = Math.floor(interpolate(fromColor[2], toColor[2], dtSum, duration));
-        cellStyles[cellId] = Object.assign({}, cellStyles[cellId], {
-          fill : rgb(r, g, b)
-        });
-        if(dtSum >= duration) {
-          animationsToRemove.push(key);
-        }
-      };
-      animationNumber++;
+      animateArrayItemFromTo(
+        key,
+        cellStyles,
+        previousHoveredCellId,
+        duration,
+        styles.hoveredCellStyle,
+        styles.cellStyle
+      );
     }
     if(hoveredCellId != -1) {
-      cellStyles[hoveredCellId] = styles.hoveredCellStyle;
+      // cellStyles[hoveredCellId] = styles.hoveredCellStyle;
+      const key = hoveredCellId.toString();
+      let duration = 0.1;
+      animateArrayItemFromTo(
+        key,
+        cellStyles,
+        hoveredCellId,
+        duration,
+        cellStyles[hoveredCellId],
+        styles.hoveredCellStyle
+      );
     }
     previousHoveredCellId = hoveredCellId;
   }

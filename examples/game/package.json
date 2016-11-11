@@ -15,6 +15,7 @@
     "url": "https://github.com/MadKoder/ReactEdit.git/issues"
   },
   "dependencies": {
+    "d3-interpolate": "^1.1.1",
     "mobx": "^2.6.0",
     "mobx-react": "^3.5.8",
     "react": "^0.14.6",

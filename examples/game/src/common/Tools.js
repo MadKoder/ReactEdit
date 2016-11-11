@@ -43,3 +43,10 @@ export const makeMapFromList = (list) => {
 
 export const rgb = (r, g, b) =>
   '#' + (0x1000000 + (r * 0x10000) + (g * 0x100) + b).toString(16).slice(1);
+
+export const parseColor = (str) => 
+  [
+    parseInt(str.substr(1,2),16),
+    parseInt(str.substr(3,2),16),
+    parseInt(str.substr(5,2),16)
+  ];
