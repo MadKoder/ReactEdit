@@ -25,5 +25,5 @@ export let state = observable({
   get manaIncrement() {return makeManaIncrement();},
   get manaSources() {return manaSources.manaSources;},
   get manaSourcesMap() {return manaSources.manaSourcesMap;},
-  get board() {return board;}
+  get board() {return board.get();}
 });

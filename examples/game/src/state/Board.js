@@ -26,6 +26,6 @@ export let board = computed(() => makeMap((col, row) => ({
   col,
   row,
   id : makeCellId(col, row),
-  influence : influenceMap.get()[makeCellId(col,row)],
-  manaSource : manaSources.manaSourcesMap.get()[makeCellId(col,row)]
+  get influence() {return influenceMap.get()[makeCellId(col,row)];},
+  get manaSource() {return manaSources.manaSourcesMap.get()[makeCellId(col,row)];}
 })));

@@ -19,17 +19,21 @@ import HGroup from './HGroup';
 
 const makeCellStyle = (state, styles) => {
   const influence = state.influence;
-  return state.id == actions.hoveredCellId.get() ?
-    styles.hoveredCellStyle : 
-    (
-      influence > 0 ? 
-      styles.influencedCellStyle :
-      styles.cellStyle
-    )
+  return influence > 0 ? 
+    styles.influencedCellStyle :
+    styles.cellStyle
 };
 
-let cellStyles = observable(makeMap((col, row, cellIndex) => 
-  styles.cellStyle
+let baseCellStyles = computed(() => makeMap((col, row, cellIndex) => 
+  makeCellStyle(state.board[cellIndex], styles)
+));
+
+let hoveringCellStyles = observable(makeMap((col, row, cellIndex) => 
+  null
+));
+
+let cellStyles = computed(() => makeMap((col, row, cellIndex) => 
+  hoveringCellStyles[cellIndex] !== null ? hoveringCellStyles[cellIndex] : baseCellStyles.get()[cellIndex]
 ));
 
 let previousHoveredCellId = -1;
@@ -38,7 +42,14 @@ let animations = {};
 let animationsToRemove = [];
 
 const animateArrayItemFromTo = (key, array, id, duration, fromVal, toVal) => {
-  let interpolator = d3.interpolate(fromVal, toVal);
+  let interpolator;
+  if((typeof fromVal === "function") || (typeof toVal === "function")) {
+    let fromValFunc = typeof fromVal === "function" ? fromVal : () => fromVal;
+    let toValFunc = typeof toVal === "function" ? toVal : () => toVal;
+    interpolator = dt => d3.interpolate(fromValFunc(), toValFunc())(dt);
+  } else {
+    interpolator = d3.interpolate(fromVal, toVal);
+  }
   let dtSum = 0;
   animations[key] = (dt) => {
     dtSum = Math.min(dtSum + dt, duration);
@@ -55,23 +66,24 @@ let hoveredCellReaction = reaction(
   hoveredCellId => {
     if(previousHoveredCellId != -1) {
       const key = previousHoveredCellId.toString();
-      let duration = 1;
+      let index = previousHoveredCellId;
+      let duration = 5;
       animateArrayItemFromTo(
         key,
-        cellStyles,
+        hoveringCellStyles,
         previousHoveredCellId,
         duration,
         styles.hoveredCellStyle,
-        styles.cellStyle
+        () => baseCellStyles.get()[index]
       );
     }
     if(hoveredCellId != -1) {
       // cellStyles[hoveredCellId] = styles.hoveredCellStyle;
       const key = hoveredCellId.toString();
-      let duration = 0.1;
+      let duration = 10;
       animateArrayItemFromTo(
         key,
-        cellStyles,
+        hoveringCellStyles,
         hoveredCellId,
         duration,
         cellStyles[hoveredCellId],
@@ -87,9 +99,9 @@ const makeBoardSvg = (cellStyle) => (
   _(makeMap((col, row, cellIndex) => 
     <Cell
       key={cellIndex}
-      state={state.board.get()[makeCellId(col, row)]}
+      state={state.board[makeCellId(col, row)]}
       styles={styles}
-      style={cellStyles[makeCellId(col, row)]}
+      style={cellStyles.get()[makeCellId(col, row)]}
     />
   ))
   .concat(
@@ -178,13 +190,13 @@ function update(dt) {
   }
 }
 
-const render = (dt) => {
+const render = (dt, dtBeforeUpdate) => {
   transaction(() => {
     styles.tower.strokeWidth = strokeWidth;
     styles.manaSourceStyle = Object.assign({}, styles.manaSourceStyle, {
       strokeWidth
     });
-    _.each(animations, (animation) => {animation(dt);});
+    _.each(animations, (animation) => {animation(dtBeforeUpdate);});
     _.each(animationsToRemove, (key) => {delete animations[key];});
     animationsToRemove.length = 0;
   });
@@ -207,6 +219,7 @@ function frame() {
   now   = timestamp();
   // dt = dt + Math.min(1, (now - last) / 1000);
   dt = dt + Math.min(1, (now - last) / 1000);
+  let dtBeforeUpdate = dt;
   let updated = false;
   while(dt > step) {
     dt = dt - step;
@@ -214,8 +227,8 @@ function frame() {
     updated = true;
   }
   // Maybe we would want to only render when updated ?
-  if(updated) {
-    render(dt);
+  if(true) {
+    render(dt, dtBeforeUpdate);
   }
   last = now;
   requestAnimationFrame(frame); // request the next frame
