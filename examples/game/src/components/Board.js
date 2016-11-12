@@ -53,20 +53,22 @@ const setTransition = (key, transitionStep) => {
   };
 };
 
-const makeArrayItemTransitionFunction = (array, id, duration, interpolator) => {
+const makeTransitionFunction = (getter, setter, duration, interpolator) => {
   let dtSum = 0;
+  // Returns false when finished, i.e. dtSum >= duration
   return dt => {
     dtSum = Math.min(dtSum + dt, duration);
-    let interpolatedVal = interpolator(dtSum/duration);
+    let interpolatedVal = interpolator(dtSum / duration);
     if(interpolatedVal === null) {
-      array[id] = null;
+      setter(null);
     } else {
-      array[id] = Object.assign({}, array[id], interpolatedVal);
+      setter(Object.assign({}, getter(), interpolatedVal));
     }
     return (dtSum < duration);
-  }
+  };
 };
 
+// If fromVal or toVal is a function, the interpolator calls them each time it is called
 const makeInterpolator = (fromVal, toVal) => {
   if((typeof fromVal === "function") || (typeof toVal === "function")) {
     let fromValFunc = typeof fromVal === "function" ? fromVal : () => fromVal;
@@ -77,15 +79,15 @@ const makeInterpolator = (fromVal, toVal) => {
   }    
 };
 
-const addArrayItemTransitionStep = (array, id, duration, fromVal, toVal, transitionStep) => {
+const addTransitionStep = (getter, setter, duration, fromVal, toVal, transitionStep) => {
   const interpolator = makeInterpolator(fromVal, toVal);
-  transitionStep.animate = makeArrayItemTransitionFunction(array, id, duration, interpolator);
-  return addArrayItemTransition(null, array, id, transitionStep);
+  transitionStep.animate = makeTransitionFunction(getter, setter, duration, interpolator);
+  return addTransition(null, getter, setter, transitionStep);
 };
 
-const makeArrayItemTransition = (array, id, transitionStep) =>({
+const makeTransition = (getter, setter, transitionStep) =>({
   fromTo : (duration, fromVal, toVal) => {
-    return addArrayItemTransitionStep(array, id, duration, fromVal, toVal, transitionStep);
+    return addTransitionStep(getter, setter, duration, fromVal, toVal, transitionStep);
   },
   to : (duration, toVal) => {
     // This function will memoize initial value first time it is called, i.e. at the start
@@ -94,16 +96,16 @@ const makeArrayItemTransition = (array, id, transitionStep) =>({
     let memoizedFromVal = null;
     const fromVal = () => {
       if(!fromValMemoized) {
-        memoizedFromVal = array[id];
+        memoizedFromVal = getter();
         fromValMemoized = true;
       }
       return memoizedFromVal;
     };
-    return addArrayItemTransitionStep(array, id, duration, fromVal, toVal, transitionStep);
+    return addTransitionStep(getter, setter, duration, fromVal, toVal, transitionStep);
   }
 });
 
-const addArrayItemTransition = (key, array, id, previous=null) => {
+const addTransition = (key, getter, setter, previous=null) => {
   // The step will be filled
   let transitionStep = {
     animate : () => false,
@@ -116,7 +118,15 @@ const addArrayItemTransition = (key, array, id, previous=null) => {
     previous.next = transitionStep;
   }
 
-  return makeArrayItemTransition(array, id, transitionStep);
+  return makeTransition(getter, setter, transitionStep);
+};
+
+const addArrayItemTransition = (key, array, id, previous=null) => {
+  const getter = () => array[id];
+  const setter = val => {
+    array[id] = val;
+  };
+  return addTransition(key, getter, setter);
 };
 
 let hoveredCellReaction = reaction(
@@ -125,7 +135,7 @@ let hoveredCellReaction = reaction(
     if(previousHoveredCellId != -1) {
       const key = previousHoveredCellId.toString();
       let index = previousHoveredCellId;
-      let duration = 2;
+      let duration = 4;
       addArrayItemTransition(
         key,
         hoveringCellStyles,
@@ -137,19 +147,10 @@ let hoveredCellReaction = reaction(
         0.1,
         null
       );
-      // ).fromTo(
-      //   duration,
-      //   styles.hoveredCellStyle,
-      //   () => baseCellStyles.get()[index]
-      // ).fromTo(
-      //   0.1,
-      //   () => baseCellStyles.get()[index],
-      //   null
-      // );
     }
     if(hoveredCellId != -1) {
       const key = hoveredCellId.toString();
-      let duration = 2;
+      let duration = 0.5;
       addArrayItemTransition(
         key,
         hoveringCellStyles,
