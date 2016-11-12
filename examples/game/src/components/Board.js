@@ -41,21 +41,6 @@ let previousHoveredCellId = -1;
 let animations = {};
 let animationsToRemove = [];
 
-const makeTransitionFunction = (getter, setter, duration, interpolator) => {
-  let dtSum = 0;
-  // Returns false when finished, i.e. dtSum >= duration
-  return dt => {
-    dtSum = Math.min(dtSum + dt, duration);
-    let interpolatedVal = interpolator(dtSum / duration);
-    if(interpolatedVal === null) {
-      setter(null);
-    } else {
-      setter(Object.assign({}, getter(), interpolatedVal));
-    }
-    return (dtSum < duration);
-  };
-};
-
 // If fromVal or toVal is a function, the interpolator calls them each time it is called
 const makeInterpolator = (fromVal, toVal) => {
   if((typeof fromVal === "function") || (typeof toVal === "function")) {
@@ -67,9 +52,39 @@ const makeInterpolator = (fromVal, toVal) => {
   }    
 };
 
+let strokeAnimationT = 0;
+const strokeInterpolator = makeInterpolator(1, 4);
+const strokeAnimationDuration = 1;
+animations["repeat"] = dt => {
+  strokeAnimationT += dt;
+  strokeAnimationT = strokeAnimationT % (strokeAnimationDuration  * 2);
+  let repeatT = strokeAnimationT % (strokeAnimationDuration  * 2);
+  if(repeatT > strokeAnimationDuration) {
+    repeatT = (strokeAnimationDuration * 2) - repeatT;
+  }
+  const interpolationFactor = repeatT / strokeAnimationDuration;
+  const strokeWidth = strokeInterpolator(interpolationFactor);
+
+  styles.tower.strokeWidth = strokeWidth;
+  styles.manaSourceStyle = Object.assign({}, styles.manaSourceStyle, {
+    strokeWidth
+  });
+};
+
+const makeTransitionFunction = (setter, duration, interpolator) => {
+  let t = 0;
+  // Returns false when finished, i.e. t >= duration
+  return dt => {
+    t = Math.min(t + dt, duration);
+    let interpolatedVal = interpolator(t / duration);
+    setter(interpolatedVal);
+    return (t < duration);
+  };
+};
+
 const addTransitionStep = (getter, setter, duration, fromVal, toVal, transitionStep) => {
   const interpolator = makeInterpolator(fromVal, toVal);
-  transitionStep.animate = makeTransitionFunction(getter, setter, duration, interpolator);
+  transitionStep.animate = makeTransitionFunction(setter, duration, interpolator);
   return addTransition(null, getter, setter, transitionStep);
 };
 
@@ -132,7 +147,11 @@ const addTransition = (key, getter, setter, previous=null) => {
 const addArrayItemTransition = (key, array, id, previous=null) => {
   const getter = () => array[id];
   const setter = val => {
-    array[id] = val;
+    if(val === null) {
+      array[id] = null;
+    } else {
+      array[id] = Object.assign({}, array[id], val);
+    }
   };
   return addTransition(key, getter, setter);
 };
@@ -259,27 +278,12 @@ export const Board = observer(({cellStyle, mousePos}) =>
   </div>
 );
 
-let towerStrokeWidthIncrement = 10.;
-
-let strokeWidth = styles.tower.strokeWidth
 function update(dt) {
   // strokeWidth = strokeWidth + towerStrokeWidthIncrement * dt;
   // if((strokeWidth > 4) || (strokeWidth < 1)) {
   //   towerStrokeWidthIncrement = -towerStrokeWidthIncrement;
   // }
 }
-
-animations["repeat"] = dt => {
-  strokeWidth = strokeWidth + towerStrokeWidthIncrement * dt;
-  if((strokeWidth > 4) || (strokeWidth < 1)) {
-    towerStrokeWidthIncrement = -towerStrokeWidthIncrement;
-  }
-  strokeWidth = _.clamp(strokeWidth, 1, 4);
-  styles.tower.strokeWidth = strokeWidth;
-  styles.manaSourceStyle = Object.assign({}, styles.manaSourceStyle, {
-    strokeWidth
-  });
-};
 
 const render = (remainingDt, dt) => {
   transaction(() => {
