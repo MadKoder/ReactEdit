@@ -41,18 +41,6 @@ let previousHoveredCellId = -1;
 let animations = {};
 let animationsToRemove = [];
 
-const setTransition = (key, transitionStep) => {
-  animations[key] = (dt) => {
-    if(!transitionStep.animate(dt)) {
-      if(transitionStep.next !== null) {
-        setTransition(key, transitionStep.next);
-      } else {
-        animationsToRemove.push(key);
-      }
-    }
-  };
-};
-
 const makeTransitionFunction = (getter, setter, duration, interpolator) => {
   let dtSum = 0;
   // Returns false when finished, i.e. dtSum >= duration
@@ -85,7 +73,10 @@ const addTransitionStep = (getter, setter, duration, fromVal, toVal, transitionS
   return addTransition(null, getter, setter, transitionStep);
 };
 
-const makeTransition = (getter, setter, transitionStep) =>({
+// A transition builder is an object that has method like "to" or "fromTo" that
+// sets the transition function for the current transition step, and returns 
+// a transition builder for the next transition step
+const makeTransitionBuilder = (getter, setter, transitionStep) =>({
   fromTo : (duration, fromVal, toVal) => {
     return addTransitionStep(getter, setter, duration, fromVal, toVal, transitionStep);
   },
@@ -105,20 +96,37 @@ const makeTransition = (getter, setter, transitionStep) =>({
   }
 });
 
+const setElementTransition = (key, transitionStep) => {
+  // Sets a keyed transition as a function that apply its transition step,
+  // and when it is finished, sets the next keyed transition using next transition step
+  animations[key] = (dt) => {
+    // If transition step finished, sets the next transition step, or remove keyed transition
+    // if no next transition
+    if(!transitionStep.animate(dt)) {
+      if(transitionStep.next !== null) {
+        setElementTransition(key, transitionStep.next);
+      } else {
+        animationsToRemove.push(key);
+      }
+    }
+  };
+};
+
 const addTransition = (key, getter, setter, previous=null) => {
   // The step will be filled
   let transitionStep = {
+    // Default transition function finish immediately
     animate : () => false,
     next : null
   };
 
   if(previous === null) {
-    setTransition(key, transitionStep);
+    setElementTransition(key, transitionStep);
   } else {
     previous.next = transitionStep;
   }
 
-  return makeTransition(getter, setter, transitionStep);
+  return makeTransitionBuilder(getter, setter, transitionStep);
 };
 
 const addArrayItemTransition = (key, array, id, previous=null) => {
@@ -135,7 +143,7 @@ let hoveredCellReaction = reaction(
     if(previousHoveredCellId != -1) {
       const key = previousHoveredCellId.toString();
       let index = previousHoveredCellId;
-      let duration = 4;
+      let duration = 1;
       addArrayItemTransition(
         key,
         hoveringCellStyles,
@@ -150,7 +158,7 @@ let hoveredCellReaction = reaction(
     }
     if(hoveredCellId != -1) {
       const key = hoveredCellId.toString();
-      let duration = 0.5;
+      let duration = 0.3;
       addArrayItemTransition(
         key,
         hoveringCellStyles,
@@ -255,19 +263,27 @@ let towerStrokeWidthIncrement = 10.;
 
 let strokeWidth = styles.tower.strokeWidth
 function update(dt) {
+  // strokeWidth = strokeWidth + towerStrokeWidthIncrement * dt;
+  // if((strokeWidth > 4) || (strokeWidth < 1)) {
+  //   towerStrokeWidthIncrement = -towerStrokeWidthIncrement;
+  // }
+}
+
+animations["repeat"] = dt => {
   strokeWidth = strokeWidth + towerStrokeWidthIncrement * dt;
   if((strokeWidth > 4) || (strokeWidth < 1)) {
     towerStrokeWidthIncrement = -towerStrokeWidthIncrement;
   }
-}
+  strokeWidth = _.clamp(strokeWidth, 1, 4);
+  styles.tower.strokeWidth = strokeWidth;
+  styles.manaSourceStyle = Object.assign({}, styles.manaSourceStyle, {
+    strokeWidth
+  });
+};
 
-const render = (dt, dtBeforeUpdate) => {
+const render = (remainingDt, dt) => {
   transaction(() => {
-    styles.tower.strokeWidth = strokeWidth;
-    styles.manaSourceStyle = Object.assign({}, styles.manaSourceStyle, {
-      strokeWidth
-    });
-    _.each(animations, (animation) => {animation(dtBeforeUpdate);});
+    _.each(animations, animation => {animation(dt);});
     _.each(animationsToRemove, (key) => {delete animations[key];});
     animationsToRemove.length = 0;
   });
@@ -292,14 +308,16 @@ function frame() {
   dt = dt + Math.min(1, (now - last) / 1000);
   let dtBeforeUpdate = dt;
   let updated = false;
+  let spentDt = 0;
   while(dt > step) {
+    spentDt += step;
     dt = dt - step;
     update(step);
     updated = true;
   }
   // Maybe we would want to only render when updated ?
   if(true) {
-    render(dt, dtBeforeUpdate);
+    render(dt, spentDt);
   }
   last = now;
   requestAnimationFrame(frame); // request the next frame
