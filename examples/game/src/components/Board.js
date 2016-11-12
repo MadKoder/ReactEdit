@@ -52,54 +52,60 @@ const makeInterpolator = (fromVal, toVal) => {
   }    
 };
 
-let strokeAnimationT = 0;
-const strokeInterpolator = makeInterpolator(1, 4);
-const strokeAnimationDuration = 1;
-animations["repeat"] = dt => {
-  strokeAnimationT += dt;
-  strokeAnimationT = strokeAnimationT % (strokeAnimationDuration  * 2);
-  let repeatT = strokeAnimationT % (strokeAnimationDuration  * 2);
-  if(repeatT > strokeAnimationDuration) {
-    repeatT = (strokeAnimationDuration * 2) - repeatT;
-  }
-  const interpolationFactor = repeatT / strokeAnimationDuration;
-  const strokeWidth = strokeInterpolator(interpolationFactor);
 
-  styles.tower.strokeWidth = strokeWidth;
-  styles.manaSourceStyle = Object.assign({}, styles.manaSourceStyle, {
-    strokeWidth
-  });
-};
-
-const makeTransitionFunction = (setter, duration, interpolator) => {
+const makeDeltaTransitionFunction = (setter, duration, interpolator) => {
   let t = 0;
   // Returns false when finished, i.e. t >= duration
   return dt => {
     t = Math.min(t + dt, duration);
-    let interpolatedVal = interpolator(t / duration);
-    setter(interpolatedVal);
+
+    setter(interpolator(t / duration));
+
     return (t < duration);
   };
 };
 
-const addTransitionStep = (getter, setter, duration, fromVal, toVal, transitionStep) => {
-  const interpolator = makeInterpolator(fromVal, toVal);
-  transitionStep.animate = makeTransitionFunction(setter, duration, interpolator);
-  return addTransition(null, getter, setter, transitionStep);
+const makeYoyoAnimation = (setter, duration, interpolator) => {
+  let t = 0;
+  return dt => {
+    t = (t + dt) % (duration  * 2);
+    const yoyoT = t > duration ?
+      (duration * 2) - t :
+      t;
+
+    setter(interpolator(yoyoT / duration));
+  };
 };
 
-// A transition builder is an object that has method like "to" or "fromTo" that
-// sets the transition function for the current transition step, and returns 
-// a transition builder for the next transition step
-const makeTransitionBuilder = (getter, setter, transitionStep) =>({
-  fromTo : (duration, fromVal, toVal) => {
-    return addTransitionStep(getter, setter, duration, fromVal, toVal, transitionStep);
-  },
-  to : (duration, toVal) => {
+function strokeSetter(strokeWidth) {
+  styles.tower.strokeWidth = strokeWidth;
+  styles.manaSourceStyle = Object.assign({}, styles.manaSourceStyle, {
+    strokeWidth
+  });
+}
+const strokeAnimationDuration = 1;
+const strokeInterpolator = makeInterpolator(1, 4);
+animations["repeat"] = makeYoyoAnimation(strokeSetter, strokeAnimationDuration, strokeInterpolator);
+
+class TransitionChain {
+  constructor(getter, setter) {
+    this.transitions = [];
+    this.current = 0;
+    this.getter = getter;
+    this.setter = setter;
+  }
+
+  fromTo(duration, fromVal, toVal) {
+    this.addTransition(duration, fromVal, toVal);
+    return this;
+  }
+
+  to(duration, toVal) {
     // This function will memoize initial value first time it is called, i.e. at the start
     // of the transition using it
     let fromValMemoized = false;
     let memoizedFromVal = null;
+    const getter = this.getter;
     const fromVal = () => {
       if(!fromValMemoized) {
         memoizedFromVal = getter();
@@ -107,41 +113,34 @@ const makeTransitionBuilder = (getter, setter, transitionStep) =>({
       }
       return memoizedFromVal;
     };
-    return addTransitionStep(getter, setter, duration, fromVal, toVal, transitionStep);
+    this.addTransition(duration, fromVal, toVal);
+    return this;
   }
-});
 
-const setElementTransition = (key, transitionStep) => {
-  // Sets a keyed transition as a function that apply its transition step,
-  // and when it is finished, sets the next keyed transition using next transition step
+  addTransition(duration, fromVal, toVal) {
+    const interpolator = makeInterpolator(fromVal, toVal);
+    this.transitions.push(makeDeltaTransitionFunction(this.setter, duration, interpolator));
+  };
+}
+
+const setElementTransitionChain = (key, timeLine) => {
   animations[key] = (dt) => {
-    // If transition step finished, sets the next transition step, or remove keyed transition
-    // if no next transition
-    if(!transitionStep.animate(dt)) {
-      if(transitionStep.next !== null) {
-        setElementTransition(key, transitionStep.next);
-      } else {
-        animationsToRemove.push(key);
+    let current = timeLine.current;
+    if(current < timeLine.transitions.length) {
+      const transition = timeLine.transitions[current];
+      if(!transition(dt)) {
+        timeLine.current++;
       }
+    } else {
+      animationsToRemove.push(key);
     }
   };
 };
 
 const addTransition = (key, getter, setter, previous=null) => {
-  // The step will be filled
-  let transitionStep = {
-    // Default transition function finish immediately
-    animate : () => false,
-    next : null
-  };
-
-  if(previous === null) {
-    setElementTransition(key, transitionStep);
-  } else {
-    previous.next = transitionStep;
-  }
-
-  return makeTransitionBuilder(getter, setter, transitionStep);
+  let timeLine = new TransitionChain(getter, setter);
+  setElementTransitionChain(key, timeLine);
+  return timeLine;
 };
 
 const addArrayItemTransition = (key, array, id, previous=null) => {
