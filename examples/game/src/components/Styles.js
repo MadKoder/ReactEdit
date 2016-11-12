@@ -51,7 +51,7 @@ export let filledManaMeterStyle = observable(Object.assign({}, manaMeterStyle, {
 }));
 
 export let manaSourceStyle = observable({
-  stroke: 'Gold',
+  stroke: 'gold',
   fill : 'none',
   strokeWidth : 1
 });

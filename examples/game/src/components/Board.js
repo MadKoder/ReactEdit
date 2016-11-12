@@ -52,6 +52,42 @@ const makeInterpolator = (fromVal, toVal) => {
   }    
 };
 
+class Transition {
+  constructor(setter, duration, interpolator) {
+    this.setter = setter;
+    this.duration = duration;
+    this.interpolator = interpolator;
+    this.currentT = 0;
+  }
+
+  goto(t) {
+    this.currentT = t;
+    if(t < this.duration) {
+      this.setter(this.interpolator(t / this.duration));
+      return -1;
+    } else {
+      this.setter(this.interpolator(1));
+      return t - this.duration;
+    }
+  }
+
+  forward(dt) {
+    return this.goto(this.currentT + dt);
+  }
+};
+
+const makeTransition = (setter, duration, interpolator) => {
+  let t = 0;
+  // Returns false when finished, i.e. t >= duration
+  return dt => {
+    t = Math.min(t + dt, duration);
+
+    setter(interpolator(t / duration));
+
+    return (t < duration);
+  };
+};
+
 
 const makeDeltaTransitionFunction = (setter, duration, interpolator) => {
   let t = 0;
@@ -65,27 +101,22 @@ const makeDeltaTransitionFunction = (setter, duration, interpolator) => {
   };
 };
 
-const makeYoyoAnimation = (setter, duration, interpolator) => {
+const makeYoyoAnimationFromTransition = (transition) => {
   let t = 0;
+  let duration = transition.duration;
   return dt => {
     t = (t + dt) % (duration  * 2);
     const yoyoT = t > duration ?
       (duration * 2) - t :
       t;
 
-    setter(interpolator(yoyoT / duration));
+    transition.goto(yoyoT);
   };
 };
 
-function strokeSetter(strokeWidth) {
-  styles.tower.strokeWidth = strokeWidth;
-  styles.manaSourceStyle = Object.assign({}, styles.manaSourceStyle, {
-    strokeWidth
-  });
-}
-const strokeAnimationDuration = 1;
-const strokeInterpolator = makeInterpolator(1, 4);
-animations["repeat"] = makeYoyoAnimation(strokeSetter, strokeAnimationDuration, strokeInterpolator);
+const makeYoyoAnimation = (setter, duration, interpolator) => {
+  return makeYoyoAnimationFromTransition(new Transition(setter, duration, interpolator));
+};
 
 class TransitionChain {
   constructor(getter, setter) {
@@ -93,6 +124,8 @@ class TransitionChain {
     this.current = 0;
     this.getter = getter;
     this.setter = setter;
+    this.duration = 0;
+    this.currentT = 0;
   }
 
   fromTo(duration, fromVal, toVal) {
@@ -106,41 +139,102 @@ class TransitionChain {
     let fromValMemoized = false;
     let memoizedFromVal = null;
     const getter = this.getter;
-    const fromVal = () => {
-      if(!fromValMemoized) {
-        memoizedFromVal = getter();
-        fromValMemoized = true;
-      }
-      return memoizedFromVal;
-    };
+    let fromVal;
+    if(this.transitions.length > 0) {
+      fromVal = Object.assign(
+        {},
+        getter(),
+        this.transitions[this.transitions.length - 1].interpolator(1)
+      );
+    } else {
+      fromVal = () => {
+        if(!fromValMemoized) {
+          memoizedFromVal = getter();
+          fromValMemoized = true;
+        }
+        return memoizedFromVal;
+      };
+    }
     this.addTransition(duration, fromVal, toVal);
     return this;
   }
 
   addTransition(duration, fromVal, toVal) {
     const interpolator = makeInterpolator(fromVal, toVal);
-    this.transitions.push(makeDeltaTransitionFunction(this.setter, duration, interpolator));
+    const transition = new Transition(this.setter, duration, interpolator);
+    this.duration += transition.duration;
+    this.transitions.push(transition);
   };
+
+  goto(t) {
+    // TODO, a bit complex, mainly because of the management of chaining "to" transitions
+    // OK, brute force version, really not optimized
+    let relativeT = t;
+    let currentTransitionIndex = 0;
+    while(currentTransitionIndex <= this.transitions.length && relativeT >= 0) {
+      const currentTransition = this.transitions[currentTransitionIndex];
+      if(relativeT <= currentTransition.duration) {
+        currentTransition.goto(relativeT);
+        relativeT = -1;
+      } else {
+        currentTransition.goto(currentTransition.duration);
+        relativeT -= currentTransition.duration;
+        currentTransitionIndex++;
+      }
+    }
+  }
+
+  forward(dt) {
+    while(
+      (dt > 0) && 
+      (this.current < this.transitions.length)
+    ) {
+      const transition = this.transitions[this.current];
+      dt = transition.forward(dt);
+      if(dt >= 0) {
+        this.current++;
+      }
+    }
+    return dt;
+  }
 }
 
-const setElementTransitionChain = (key, timeLine) => {
+function strokeSetter(style) {
+  Object.assign(styles.tower, style);
+  styles.manaSourceStyle = Object.assign({}, styles.manaSourceStyle, style);
+}
+
+let transitionChain = new TransitionChain(
+  () => styles.manaSourceStyle,
+  strokeSetter
+)
+.to(
+  0.5,
+  {
+    strokeWidth : 4
+  }
+)
+.to(
+  0.5,
+  {
+    stroke: 'tomato'
+  }
+);
+
+animations["repeat"] = makeYoyoAnimationFromTransition(transitionChain);
+
+const setElementTransitionChain = (key, transitionChain) => {
   animations[key] = (dt) => {
-    let current = timeLine.current;
-    if(current < timeLine.transitions.length) {
-      const transition = timeLine.transitions[current];
-      if(!transition(dt)) {
-        timeLine.current++;
-      }
-    } else {
+    if(transitionChain.forward(dt) > 0) {
       animationsToRemove.push(key);
     }
   };
 };
 
 const addTransition = (key, getter, setter, previous=null) => {
-  let timeLine = new TransitionChain(getter, setter);
-  setElementTransitionChain(key, timeLine);
-  return timeLine;
+  let transitionChain = new TransitionChain(getter, setter);
+  setElementTransitionChain(key, transitionChain);
+  return transitionChain;
 };
 
 const addArrayItemTransition = (key, array, id, previous=null) => {
