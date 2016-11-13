@@ -19,7 +19,7 @@ export const Cell = observer(({state, styles, style}) =>
     {
       state.manaSource !== null ?
       <rect 
-        style={styles.manaSourceStyle}
+        style={Object.assign({}, styles.manaSourceStyle)}
         x={state.col * cellWidth + 2}
         y={state.row * cellHeight + 2}
         width={cellWidth - 4}

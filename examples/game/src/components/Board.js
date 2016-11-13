@@ -140,20 +140,21 @@ class TransitionChain {
     let memoizedFromVal = null;
     const getter = this.getter;
     let fromVal;
+    // If it's not the first transition in the chain, the from value is computed
+    // by mergin initial value (getter()) and the end interpolated value of current
+    // chain of transitions
     if(this.transitions.length > 0) {
-      fromVal = Object.assign(
-        {},
-        getter(),
-        this.transitions[this.transitions.length - 1].interpolator(1)
+      fromVal = Object.assign.apply(
+        Object,
+        [
+          {},
+          getter()
+        ].concat(this.transitions.map(
+          transition => transition.interpolator(1)
+        ))
       );
     } else {
-      fromVal = () => {
-        if(!fromValMemoized) {
-          memoizedFromVal = getter();
-          fromValMemoized = true;
-        }
-        return memoizedFromVal;
-      };
+      fromVal = getter();
     }
     this.addTransition(duration, fromVal, toVal);
     return this;
@@ -199,29 +200,37 @@ class TransitionChain {
   }
 }
 
-function strokeSetter(style) {
-  Object.assign(styles.tower, style);
-  styles.manaSourceStyle = Object.assign({}, styles.manaSourceStyle, style);
-}
-
-let transitionChain = new TransitionChain(
+let manaSourceTransitionChain = new TransitionChain(
   () => styles.manaSourceStyle,
-  strokeSetter
-)
-.to(
-  0.5,
-  {
-    strokeWidth : 4
-  }
-)
-.to(
-  0.5,
-  {
-    stroke: 'tomato'
-  }
+  (style) => {Object.assign(styles.manaSourceStyle, style);}
 );
 
-animations["repeat"] = makeYoyoAnimationFromTransition(transitionChain);
+let towerTransitionChain = new TransitionChain(
+  () => styles.tower,
+  (style) => {Object.assign(styles.tower, style);}
+);
+
+function setupTowerAndManaSourceTransitionChain(transitionChain, finalStroke) {
+  transitionChain
+  .to(
+    0.5,
+    {
+      strokeWidth : 4
+    }
+  )
+  .to(
+    0.5,
+    {
+      stroke: 'tomato'
+    }
+  );
+}
+
+setupTowerAndManaSourceTransitionChain(manaSourceTransitionChain);
+setupTowerAndManaSourceTransitionChain(towerTransitionChain);
+
+animations["manaSourceStyle"] = makeYoyoAnimationFromTransition(manaSourceTransitionChain);
+animations["towerStyle"] = makeYoyoAnimationFromTransition(towerTransitionChain);
 
 const setElementTransitionChain = (key, transitionChain) => {
   animations[key] = (dt) => {

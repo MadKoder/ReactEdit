@@ -36,7 +36,7 @@ export let tower = observable({
 });
 
 export let baseTower = computed(() => Object.assign({}, tower, {
-  fill : "DarkSlateBlue"
+  fill : "lavender"
 }));
 
 export let manaMeterStyle = observable({
@@ -57,12 +57,14 @@ export let manaSourceStyle = observable({
 });
 
 export let styles = observable({
-  tower,
+  get tower() {return tower;},
+  set tower(style) {Object.assign(tower, style);},
   baseTower,
   cellStyle,
   influencedCellStyle,
   hoveredCellStyle,
-  manaSourceStyle
+  get manaSourceStyle() {return manaSourceStyle;},
+  set manaSourceStyle(style) {Object.assign(manaSourceStyle, style);},
 });
 
 export default styles;
