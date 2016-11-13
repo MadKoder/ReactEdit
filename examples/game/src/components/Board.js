@@ -140,9 +140,9 @@ class TransitionChain {
     let memoizedFromVal = null;
     const getter = this.getter;
     let fromVal;
-    // If it's not the first transition in the chain, the from value is computed
-    // by mergin initial value (getter()) and the end interpolated value of current
-    // chain of transitions
+    // If it's not the first transition in the chain, the from value is 
+    // the merging of the initial value (getter()) and all the last interpolated values
+    // of current chain of transitions
     if(this.transitions.length > 0) {
       fromVal = Object.assign.apply(
         Object,
@@ -200,34 +200,55 @@ class TransitionChain {
   }
 }
 
-let manaSourceTransitionChain = new TransitionChain(
-  () => styles.manaSourceStyle,
-  (style) => {Object.assign(styles.manaSourceStyle, style);}
-);
+function makeTransitionChain(getter, setter) {
+  return new TransitionChain(getter, setter);
+}
 
-let towerTransitionChain = new TransitionChain(
-  () => styles.tower,
-  (style) => {Object.assign(styles.tower, style);}
-);
-
-function setupTowerAndManaSourceTransitionChain(transitionChain, finalStroke) {
-  transitionChain
-  .to(
-    0.5,
-    {
-      strokeWidth : 4
-    }
-  )
-  .to(
-    0.5,
-    {
-      stroke: 'tomato'
-    }
+function transition(obj) {
+  return makeTransitionChain(  
+    () => obj,
+    (newObj) => {Object.assign(obj, newObj);}
   );
 }
 
-setupTowerAndManaSourceTransitionChain(manaSourceTransitionChain);
-setupTowerAndManaSourceTransitionChain(towerTransitionChain);
+let manaSourceTransitionChain = transition(styles.manaSourceStyle);
+let towerTransitionChain = transition(styles.tower);
+
+class MergedTransitionChain {
+  constructor(chains) {
+    this.chains = chains;
+  }
+
+  fromTo(duration, fromVal, toVal) {
+    for(let chain of this.chains) {
+      chain.fromTo(duration, fromVal, toVal);
+    }
+    return this;
+  }
+
+  to(duration, toVal) {
+    for(let chain of this.chains) {
+      chain.to(duration, toVal);
+    }
+    return this;
+  }
+}
+
+const merge = chains => new MergedTransitionChain(chains);
+
+merge([manaSourceTransitionChain, towerTransitionChain])
+.to(
+  0.5,
+  {
+    strokeWidth : 4
+  }
+)
+.to(
+  0.5,
+  {
+    stroke: 'lightgray'
+  }
+);
 
 animations["manaSourceStyle"] = makeYoyoAnimationFromTransition(manaSourceTransitionChain);
 animations["towerStyle"] = makeYoyoAnimationFromTransition(towerTransitionChain);
