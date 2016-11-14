@@ -31,41 +31,18 @@ class Transition {
   }
 };
 
-const makeTransition = (wrapper, duration, interpolator) => {
-  let t = 0;
-  // Returns false when finished, i.e. t >= duration
-  return dt => {
-    t = Math.min(t + dt, duration);
-
-    wrapper(interpolator(t / duration));
-
-    return (t < duration);
-  };
-};
-
-
-const makeDeltaTransitionFunction = (setter, duration, interpolator) => {
-  let t = 0;
-  // Returns false when finished, i.e. t >= duration
-  return dt => {
-    t = Math.min(t + dt, duration);
-
-    setter(interpolator(t / duration));
-
-    return (t < duration);
-  };
-};
-
-export const makeYoyoAnimationFromTransition = (transition) => {
+export function makeYoyoAnimationFromTransition(transition) {
   let t = 0;
   let duration = transition.duration;
-  return dt => {
-    t = (t + dt) % (duration  * 2);
-    const yoyoT = t > duration ?
-      (duration * 2) - t :
-      t;
+  return {
+    forward : function(dt) {
+      t = (t + dt) % (duration  * 2);
+      const yoyoT = t > duration ?
+        (duration * 2) - t :
+        t;
 
-    transition.goto(yoyoT);
+      transition.goto(yoyoT);
+    }
   };
 };
 
@@ -165,13 +142,9 @@ export class TransitionChain {
   }
 }
 
-function makeTransitionChain(wrapper) {
-  return new TransitionChain(wrapper);
-}
-
 export function transition(obj) {
   const wrapper = wrap(obj);
-  return makeTransitionChain(wrapper);
+  return new TransitionChain(wrapper);
 }
 
 class MergedTransitionChain {

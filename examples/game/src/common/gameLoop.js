@@ -12,20 +12,22 @@ export let animations = {};
 let animationsToRemove = [];
 
 const setElementTransitionChain = (key, transitionChain) => {
-  animations[key] = (dt) => {
-    if(transitionChain.forward(dt) > 0) {
-      animationsToRemove.push(key);
+  animations[key] = {
+    forward : function(dt) {
+      if(transitionChain.forward(dt) > 0) {
+        animationsToRemove.push(key);
+      }
     }
   };
 };
 
-const addTransition = (key, wrapper, previous=null) => {
+const addTransition = (key, wrapper) => {
   let transitionChain = new TransitionChain(wrapper);
   setElementTransitionChain(key, transitionChain);
   return transitionChain;
 };
 
-export const addArrayItemTransition = (key, array, id, previous=null) => {
+export const addArrayItemTransition = (key, array, id) => {
   const wrapper = wrap(array, id);
   return addTransition(key, wrapper);
 };
@@ -34,7 +36,7 @@ function update(dt) {}
 
 const render = (remainingDt, dt) => {
   transaction(() => {
-    _.each(animations, animation => {animation(dt);});
+    _.each(animations, animation => {animation.forward(dt);});
     _.each(animationsToRemove, (key) => {delete animations[key];});
     animationsToRemove.length = 0;
   });
