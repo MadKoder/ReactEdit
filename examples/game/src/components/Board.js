@@ -2,7 +2,10 @@ import React from 'react';
 import { computed, observable, action, transaction, reaction } from "mobx";
 import { observer } from "mobx-react";
 import * as d3 from "d3-interpolate";
+import * as d3_ease from "d3-ease";
 import _ from 'lodash';
+
+Object.assign(d3, d3_ease);
 
 import * as actions from '../common/Actions';
 import {boardWidth, boardHeight} from '../common/Constants';
@@ -43,18 +46,22 @@ let animationsToRemove = [];
 
 // If fromVal or toVal is a function, the interpolator calls them each time it is called
 const makeInterpolator = (fromVal, toVal) => {
+  const ease = d3.easeExpIn;
+  // const ease = t => t;
   if((typeof fromVal === "function") || (typeof toVal === "function")) {
     let fromValFunc = typeof fromVal === "function" ? fromVal : () => fromVal;
     let toValFunc = typeof toVal === "function" ? toVal : () => toVal;
-    return dt => d3.interpolate(fromValFunc(), toValFunc())(dt);
+    return t => d3.interpolate(fromValFunc(), toValFunc())(ease(t));
   } else {
-    return d3.interpolate(fromVal, toVal);
+    const interpolator = d3.interpolate(fromVal, toVal);
+    return t => interpolator(ease(t));
+    // return d3.interpolate(fromVal, toVal);
   }    
 };
 
 class Transition {
-  constructor(setter, duration, interpolator) {
-    this.setter = setter;
+  constructor(wrapper, duration, interpolator) {
+    this.wrapper = wrapper;
     this.duration = duration;
     this.interpolator = interpolator;
     this.currentT = 0;
@@ -63,10 +70,10 @@ class Transition {
   goto(t) {
     this.currentT = t;
     if(t < this.duration) {
-      this.setter(this.interpolator(t / this.duration));
+      this.wrapper(this.interpolator(t / this.duration));
       return -1;
     } else {
-      this.setter(this.interpolator(1));
+      this.wrapper(this.interpolator(1));
       return t - this.duration;
     }
   }
@@ -76,13 +83,13 @@ class Transition {
   }
 };
 
-const makeTransition = (setter, duration, interpolator) => {
+const makeTransition = (wrapper, duration, interpolator) => {
   let t = 0;
   // Returns false when finished, i.e. t >= duration
   return dt => {
     t = Math.min(t + dt, duration);
 
-    setter(interpolator(t / duration));
+    wrapper(interpolator(t / duration));
 
     return (t < duration);
   };
@@ -119,11 +126,10 @@ const makeYoyoAnimation = (setter, duration, interpolator) => {
 };
 
 class TransitionChain {
-  constructor(getter, setter) {
+  constructor(wrapper) {
     this.transitions = [];
     this.current = 0;
-    this.getter = getter;
-    this.setter = setter;
+    this.wrapper = wrapper;
     this.duration = 0;
     this.currentT = 0;
   }
@@ -134,27 +140,23 @@ class TransitionChain {
   }
 
   to(duration, toVal) {
-    // This function will memoize initial value first time it is called, i.e. at the start
-    // of the transition using it
-    let fromValMemoized = false;
-    let memoizedFromVal = null;
-    const getter = this.getter;
+    const wrapper = this.wrapper;
     let fromVal;
     // If it's not the first transition in the chain, the from value is 
-    // the merging of the initial value (getter()) and all the last interpolated values
+    // the merging of the initial value (wrapper()) and all the last interpolated values
     // of current chain of transitions
     if(this.transitions.length > 0) {
       fromVal = Object.assign.apply(
         Object,
         [
           {},
-          getter()
+          wrapper()
         ].concat(this.transitions.map(
           transition => transition.interpolator(1)
         ))
       );
     } else {
-      fromVal = getter();
+      fromVal = wrapper();
     }
     this.addTransition(duration, fromVal, toVal);
     return this;
@@ -162,7 +164,7 @@ class TransitionChain {
 
   addTransition(duration, fromVal, toVal) {
     const interpolator = makeInterpolator(fromVal, toVal);
-    const transition = new Transition(this.setter, duration, interpolator);
+    const transition = new Transition(this.wrapper, duration, interpolator);
     this.duration += transition.duration;
     this.transitions.push(transition);
   };
@@ -200,15 +202,34 @@ class TransitionChain {
   }
 }
 
-function makeTransitionChain(getter, setter) {
-  return new TransitionChain(getter, setter);
+function makeTransitionChain(wrapper) {
+  return new TransitionChain(wrapper);
+}
+
+function wrap(obj) {
+  let wrapper = (val=undefined) => {
+    if(val === undefined) {
+      return obj
+    } else {
+      Object.assign(obj, val);
+      return this;
+    }
+  };
+  Object.defineProperty(wrapper, 'x', {
+    get: function() {
+        return obj;
+    },
+    set: function(val) {
+        Object.assign(obj, val);
+        return this;
+    }
+  });
+  return wrapper;
 }
 
 function transition(obj) {
-  return makeTransitionChain(  
-    () => obj,
-    (newObj) => {Object.assign(obj, newObj);}
-  );
+  const wrapper = wrap(obj);
+  return makeTransitionChain(wrapper);
 }
 
 let manaSourceTransitionChain = transition(styles.manaSourceStyle);
@@ -261,22 +282,43 @@ const setElementTransitionChain = (key, transitionChain) => {
   };
 };
 
-const addTransition = (key, getter, setter, previous=null) => {
-  let transitionChain = new TransitionChain(getter, setter);
+const addTransition = (key, wrapper, previous=null) => {
+  let transitionChain = new TransitionChain(wrapper);
   setElementTransitionChain(key, transitionChain);
   return transitionChain;
 };
 
-const addArrayItemTransition = (key, array, id, previous=null) => {
-  const getter = () => array[id];
-  const setter = val => {
-    if(val === null) {
-      array[id] = null;
+const arrayItemWrapper = (array, id) => {
+  let wrapper = (val=undefined) => {
+    if(val === undefined) {
+      return array[id];
     } else {
-      array[id] = Object.assign({}, array[id], val);
+      if(val === null) {
+        array[id] = null;
+      } else {
+        array[id] = Object.assign({}, array[id], val);
+      }
+      return this;
     }
   };
-  return addTransition(key, getter, setter);
+  Object.defineProperty(wrapper, 'x', {
+    get: function() {
+        return array[id];
+    },
+    set: function(val) {
+      if(val === null) {
+        array[id] = null;
+      } else {
+        array[id] = Object.assign({}, array[id], val);
+      }
+    }
+  });
+  return wrapper;
+}
+
+const addArrayItemTransition = (key, array, id, previous=null) => {
+  const wrapper = arrayItemWrapper(array, id);
+  return addTransition(key, wrapper);
 };
 
 let hoveredCellReaction = reaction(
