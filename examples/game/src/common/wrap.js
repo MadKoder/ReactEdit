@@ -9,13 +9,72 @@ export function wrapObj(obj) {
   };
   Object.defineProperty(wrapper, 'x', {
     get: function() {
-        return obj;
+      return obj;
     },
     set: function(val) {
-        Object.assign(obj, val);
-        return this;
+      Object.assign(obj, val);
+      return this;
     },
   });
+  wrapper.makeMutator = function(mutator) {
+    return (...params) => {
+      mutator(wrapper, ...params);
+    }
+  }
+  wrapper.setWrapper = function(func) {
+    return func(this);
+  }
+  return wrapper;
+}
+
+export function wrapObjects(objects) {
+  let wrapper = (val=undefined) => {
+    if(val === undefined) {
+      return objects.map(obj => obj.x);
+    } else {
+      _.each(objects, (obj, index) => {
+        Object.assign(obj, val[index]);
+      });
+      return this;
+    }
+  };
+  Object.defineProperty(wrapper, 'x', {
+    get: function() {
+      return objects.map(obj => obj.x);
+    },
+    set: function(val) {
+      _.each(objects, (obj, index) => {
+        Object.assign(obj, val[index]);
+      });
+      return this;
+    },
+  });
+  wrapper.objects = objects;
+  wrapper.setWrapper = function(funcsMakers, wrappedMutatorMaker) {
+    // funcMakers : wrapper => list<(...) => {}>, i.e. 
+    // for each object, 
+    // Array that, for each objects, gives the array of functions
+    let objectToFuncArray = objects.map(obj => funcsMakers(obj));
+    // Array that, for each function category, give the array of functions
+    let funcToObjectArray = _.zip(...objectToFuncArray);
+    return wrappedMutatorMaker(
+      funcToObjectArray.map(
+        funcs => {
+          // Wrapped functions call all the function corresponding to their indices
+          return (...params) => {
+            _.each(funcs, func => {
+              func(...params);
+            });
+          }
+        }
+      )
+    );
+    // return (...params) => {
+    //   _.each(objects, (obj, index) => {
+    //     Object.assign(obj, val[index]);        
+    //   })
+    // }
+  }
   return wrapper;
 }
 

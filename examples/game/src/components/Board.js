@@ -8,8 +8,8 @@ import _ from 'lodash';
 Object.assign(d3, d3_ease);
 
 import * as actions from '../common/Actions';
-import wrap from '../common/wrap';
-import {transition, merge, makeYoyoAnimationFromTransition} from '../common/animations';
+import {wrap, wrapObjects} from '../common/wrap';
+import {transition, merge, makeYoyoAnimationFromTransition, TransitionChain} from '../common/animations';
 import {animations, addArrayItemTransition} from '../common/gameLoop';
 import {boardWidth, boardHeight} from '../common/Constants';
 import {makeCellId, vec, makeMap, rgb} from '../common/Tools';
@@ -42,24 +42,97 @@ let cellStyles = computed(() => makeMap((col, row, cellIndex) =>
   hoveringCellStyles[cellIndex] !== null ? hoveringCellStyles[cellIndex] : baseCellStyles.get()[cellIndex]
 ));
 
-let previousHoveredCellId = -1;
-let manaSourceTransitionChain = transition(styles.manaSourceStyle);
-let towerTransitionChain = transition(styles.tower);
-merge([manaSourceTransitionChain, towerTransitionChain])
-.to(
+function makeTransitionChain(transitions) {
+  return {
+    transitions,
+    then : function (duration, toVal) {
+      let newTransitions = transitions.slice(0);
+      newTransitions.push({
+        duration,
+        toVal
+      });
+      return makeTransitionChain(newTransitions);
+    },
+    target : function(wrapper) {
+      let unwrappedTC = this;
+      let tc = new TransitionChain(wrapper);
+      let totalDuration = _.sum(this.transitions.map(transition => transition.duration));
+      return wrapper.setWrapper(
+        wrapper => {
+          // Make a TransitionChain for the wrapper
+          // and set all its transitions using this.transitions params
+          let tc = new TransitionChain(wrapper);
+          _.each(unwrappedTC.transitions, transition => {
+            tc.to(transition.duration, transition.toVal)
+          });
+          // The functions that must be transformed are the forward and goto of this 
+          // TransitionChain
+          return [
+            t => {tc.forward(t);},
+            t => {tc.goto(t);}
+          ]
+        },
+        (funcs) => ({
+          forward : function(t) {
+            funcs[0](t);
+          },
+          goto : function(t) {
+            funcs[1](t);
+          },
+          duration : totalDuration
+        })
+      )
+    }
+  }
+}
+
+function trans(duration, toVal)  {
+  return makeTransitionChain([{
+    duration,
+    toVal
+  }]);
+}
+
+let t = trans(
   0.5,
   {
     strokeWidth : 4
   }
 )
-.to(
+.then(
   0.5,
   {
     stroke: 'lightgray'
   }
 );
-animations["manaSourceStyle"] = makeYoyoAnimationFromTransition(manaSourceTransitionChain);
-animations["towerStyle"] = makeYoyoAnimationFromTransition(towerTransitionChain);
+
+let manaSourceTransitionChain = t.target(wrap(styles.manaSourceStyle));
+let towerTransitionChain = t.target(wrap(styles.tower));
+
+let manaSourceAndTowerTransitionChains = t.target(wrapObjects([
+  wrap(styles.tower),
+  wrap(styles.manaSourceStyle)
+]));
+animations["manaSourceAndTowerStyles"] = makeYoyoAnimationFromTransition(manaSourceAndTowerTransitionChains);
+
+let previousHoveredCellId = -1;
+// let manaSourceTransitionChain = transition(styles.manaSourceStyle);
+// let towerTransitionChain = transition(styles.tower);
+// merge([manaSourceTransitionChain, towerTransitionChain])
+// .to(
+//   0.5,
+//   {
+//     strokeWidth : 4
+//   }
+// )
+// .to(
+//   0.5,
+//   {
+//     stroke: 'lightgray'
+//   }
+// );
+// animations["manaSourceStyle"] = makeYoyoAnimationFromTransition(manaSourceTransitionChain);
+// animations["towerStyle"] = makeYoyoAnimationFromTransition(towerTransitionChain);
 
 let hoveredCellReaction = reaction(
   () => actions.hoveredCellId.get(),
