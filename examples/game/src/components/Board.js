@@ -57,31 +57,31 @@ function makeTransitionChain(transitions) {
       let unwrappedTC = this;
       let tc = new TransitionChain(wrapper);
       let totalDuration = _.sum(this.transitions.map(transition => transition.duration));
-      return wrapper.setWrapper(
+      let wrappedFunctions = wrapper.setWrapper(
         wrapper => {
           // Make a TransitionChain for the wrapper
           // and set all its transitions using this.transitions params
           let tc = new TransitionChain(wrapper);
-          _.each(unwrappedTC.transitions, transition => {
+          for(transition of unwrappedTC.transitions) {
             tc.to(transition.duration, transition.toVal)
-          });
+          }
           // The functions that must be transformed are the forward and goto of this 
           // TransitionChain
           return [
             t => {tc.forward(t);},
             t => {tc.goto(t);}
           ]
+        }
+      );
+      return {
+        forward : function(t) {
+          wrappedFunctions[0](t);
         },
-        (funcs) => ({
-          forward : function(t) {
-            funcs[0](t);
-          },
-          goto : function(t) {
-            funcs[1](t);
-          },
-          duration : totalDuration
-        })
-      )
+        goto : function(t) {
+          wrappedFunctions[1](t);
+        },
+        duration : totalDuration
+      };
     }
   }
 }

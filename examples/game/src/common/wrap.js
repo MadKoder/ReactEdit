@@ -50,30 +50,43 @@ export function wrapObjects(objects) {
     },
   });
   wrapper.objects = objects;
-  wrapper.setWrapper = function(funcsMakers, wrappedMutatorMaker) {
-    // funcMakers : wrapper => list<(...) => {}>, i.e. 
-    // for each object, 
+  
+  // funcsMaker : wrapper => list<(...) => void>, i.e. 
+  wrapper.setWrapper = function(funcsMaker) {
+
+    // for each object, make a list of mutator functions
     // Array that, for each objects, gives the array of functions
-    let objectToFuncArray = objects.map(obj => funcsMakers(obj));
+    // e.g. if 3 objects and funcMakers returns 2 functions :
+    // [
+    //   [func0ForObj0, func1ForObj0],
+    //   [func0ForObj1, func1ForObj1],
+    //   [func0ForObj2, func1ForObj2]
+    // ]
+    let objectToFuncArray = objects.map(obj => funcsMaker(obj));
     // Array that, for each function category, give the array of functions
+    // e.g. 
+    // [
+    //   [func0ForObj0, func0ForObj1, func0ForObj2],
+    //   [func1ForObj0, func1ForObj1, func1ForObj2]
+    // ]
     let funcToObjectArray = _.zip(...objectToFuncArray);
-    return wrappedMutatorMaker(
-      funcToObjectArray.map(
-        funcs => {
-          // Wrapped functions call all the function corresponding to their indices
-          return (...params) => {
-            _.each(funcs, func => {
-              func(...params);
-            });
-          }
+    // This array contains, for each source function, a function that call 
+    // source function on each wrapped object
+    // e.g. 
+    // [
+    //   [(params) => {func0ForObj0(params); func0ForObj1(params); func0ForObj2(params)}],
+    //   [(params) => {func1ForObj0(params); func1ForObj1(params); func1ForObj2(params)}]
+    // ]
+    return funcToObjectArray.map(
+      funcs => {
+        // Wrapped functions call all the function corresponding to their indices
+        return (...params) => {
+          _.each(funcs, func => {
+            func(...params);
+          });
         }
-      )
+      }
     );
-    // return (...params) => {
-    //   _.each(objects, (obj, index) => {
-    //     Object.assign(obj, val[index]);        
-    //   })
-    // }
   }
   return wrapper;
 }
