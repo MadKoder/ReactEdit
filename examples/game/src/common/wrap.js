@@ -21,8 +21,9 @@ export function wrapObj(obj) {
       mutator(wrapper, ...params);
     }
   }
-  wrapper.setWrapper = function(func) {
-    return func(this);
+  wrapper.setWrapper = function(funcsMaker) {
+    // [func0, func1, ..]
+    return funcsMaker(this);
   }
   return wrapper;
 }
@@ -51,7 +52,8 @@ export function wrapObjects(objects) {
   });
   wrapper.objects = objects;
   
-  // funcsMaker : wrapper => list<(...) => void>, i.e. 
+  // (wrapper => list<(...) => void>) => list<(...) => void>
+  // funcsMaker : wrapper => list<(...) => void>
   wrapper.setWrapper = function(funcsMaker) {
 
     // for each object, make a list of mutator functions

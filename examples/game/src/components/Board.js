@@ -62,7 +62,7 @@ function makeTransitionChain(transitions) {
           // Make a TransitionChain for the wrapper
           // and set all its transitions using this.transitions params
           let tc = new TransitionChain(wrapper);
-          for(transition of unwrappedTC.transitions) {
+          for(let transition of unwrappedTC.transitions) {
             tc.to(transition.duration, transition.toVal)
           }
           // The functions that must be transformed are the forward and goto of this 
@@ -108,12 +108,14 @@ let t = trans(
 
 let manaSourceTransitionChain = t.target(wrap(styles.manaSourceStyle));
 let towerTransitionChain = t.target(wrap(styles.tower));
+animations["manaSourceStyle"] = makeYoyoAnimationFromTransition(manaSourceTransitionChain);
+animations["towerStyle"] = makeYoyoAnimationFromTransition(towerTransitionChain);
 
-let manaSourceAndTowerTransitionChains = t.target(wrapObjects([
-  wrap(styles.tower),
-  wrap(styles.manaSourceStyle)
-]));
-animations["manaSourceAndTowerStyles"] = makeYoyoAnimationFromTransition(manaSourceAndTowerTransitionChains);
+// let manaSourceAndTowerTransitionChains = t.target(wrapObjects([
+//   wrap(styles.tower),
+//   wrap(styles.manaSourceStyle)
+// ]));
+// animations["manaSourceAndTowerStyles"] = makeYoyoAnimationFromTransition(manaSourceAndTowerTransitionChains);
 
 let previousHoveredCellId = -1;
 // let manaSourceTransitionChain = transition(styles.manaSourceStyle);
@@ -131,8 +133,6 @@ let previousHoveredCellId = -1;
 //     stroke: 'lightgray'
 //   }
 // );
-// animations["manaSourceStyle"] = makeYoyoAnimationFromTransition(manaSourceTransitionChain);
-// animations["towerStyle"] = makeYoyoAnimationFromTransition(towerTransitionChain);
 
 let hoveredCellReaction = reaction(
   () => actions.hoveredCellId.get(),
