@@ -93,6 +93,12 @@ function trans(duration, toVal)  {
   }]);
 }
 
+function transAll(duration, toVal, object, t) {
+  trans(duration, toVal).target(object).goto(t);
+}
+
+let curriedTrans = _.curry(transAll);
+
 let t = trans(
   0.5,
   {

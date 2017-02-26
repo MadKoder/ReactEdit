@@ -1,6 +1,6 @@
 import * as d3 from "d3-interpolate";
 import * as d3_ease from "d3-ease";
-import {transaction} from "mobx";
+import {transaction, observable} from "mobx";
 import _ from 'lodash';
 
 Object.assign(d3, d3_ease);
@@ -34,17 +34,20 @@ export const addArrayItemTransition = (key, array, id) => {
 
 function update(dt) {}
 
+function timestamp() {
+  return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
+}
+
+let currentTime = observable(timestamp() / 1000);
+
 const render = (remainingDt, dt) => {
   transaction(() => {
     _.each(animations, animation => {animation.forward(dt);});
     _.each(animationsToRemove, (key) => {delete animations[key];});
     animationsToRemove.length = 0;
+    currentTime.set(timestamp() / 1000);
   });
 };
-
-function timestamp() {
-  return window.performance && window.performance.now ? window.performance.now() : new Date().getTime();
-}
 
 // Game loop from http://codeincomplete.com/posts/javascript-game-foundations-the-game-loop/
 // This game loop implements fixed steps for updates, which is cool
@@ -54,6 +57,7 @@ let
   dt = 0,
   last = timestamp(),
   step = 1/60;
+
 
 function frame() {
   now   = timestamp();
